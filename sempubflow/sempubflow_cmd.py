@@ -57,7 +57,7 @@ def main(argv=None):
             webbrowser.open(Version.doc_url)
         if args.serve:
             ws=WebServer()
-            ws.run()
+            ws.run(host=args.host,port=args.port)
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 1
