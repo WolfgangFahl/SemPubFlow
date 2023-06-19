@@ -5,7 +5,7 @@ Created on 2023-06-19
 """
 from nicegui import ui
 import urllib.request
-
+from sempubflow.homepage import Homepage
 
 class WebServer:
     """
@@ -18,22 +18,7 @@ class WebServer:
         """
         pass
 
-    def check_url(self, url:str)->bool:
-        """
-        
-        check the given url
-        
-        Args:
-            url(str): the url to check
-            
-        Returns:
-            bool: True if the url is reachable
-        """
-        try:
-            code = urllib.request.urlopen(url).getcode()
-        except Exception as _ex:
-            return False
-        return code == 200
+    
 
     def run(self, host, port):
         """
@@ -44,7 +29,7 @@ class WebServer:
             label="homepage",
             placeholder="""url of the event's homepage""",
             on_change=lambda e: result.set_text("you typed: " + e.value),
-            validation={"URL invalid": lambda url: self.check_url(url)},
+            validation={"URL invalid": lambda url: Homepage.check_url(url)}     
         )
         result = ui.label()
 
