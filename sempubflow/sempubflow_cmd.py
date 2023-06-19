@@ -26,8 +26,8 @@ def getArgParser(description:str,version_msg)->ArgumentParser:
     parser.add_argument("-a","--about",help="show about info [default: %(default)s]",action="store_true")
     parser.add_argument("-c","--client", action="store_true", help="start client [default: %(default)s]")
     parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="show debug info [default: %(default)s]")
-    parser.add_argument("--host",default="localhost",help="the host to serve / listen from [default: %(default)s]")
-    parser.add_argument("-l", "--list", action="store_true", help="list all volumes [default: %(default)s]")
+    parser.add_argument("--host", default="localhost",
+                            help="the host to serve / listen from [default: %(default)s]")
     parser.add_argument("--port",type=int,default=9857,help="the port to serve from [default: %(default)s]")
     parser.add_argument("-s","--serve", action="store_true", help="start webserver [default: %(default)s]")
     parser.add_argument("-V", "--version", action='version', version=version_msg)
@@ -55,9 +55,13 @@ def main(argv=None):
             print(program_version_message)
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
+        if args.client:
+            url=f"http://{args.host}:{args.port}"
+            webbrowser.open(url)
         if args.serve:
             ws=WebServer()
             ws.run(host=args.host,port=args.port)
+        
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 1
