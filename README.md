@@ -18,6 +18,9 @@ The system is specifically tailored towards the needs of scientific outlets such
 * Drag & Drop Support: Offers drag-and-drop functionality for PDFs and BibTeX files, streamlining the document upload process.
 * Compatible: Designed to work seamlessly with popular scientific outlets such as CEUR-WS, ACM, or DROPS.
 
+## Demo
+http://sempubflow.bitplan.com/
+
 ## Installation
 
 ```bash
