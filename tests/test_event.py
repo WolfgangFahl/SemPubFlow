@@ -17,7 +17,7 @@ class TestEvent(Basetest):
         test homepage handling
         """
         jm = JsonCacheManager()
-        vol_list = jm.load_lod("Volumes")
+        vol_list = jm.load_lod("volumes")
         self.assertTrue(len(vol_list)>3300)
         limit=10
         count=0
