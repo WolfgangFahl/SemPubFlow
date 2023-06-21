@@ -16,6 +16,8 @@ class TestOpenAi(Basetest):
         """
         test the chatgpt interface
         """
+        if self.inPublicCI():
+            return
         openai.api_key = os.getenv("OPENAI_API_KEY")
     
         # list models

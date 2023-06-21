@@ -1,0 +1,9 @@
+#!/bin/bash
+# WF 2023-06-21
+tag="python/openai"
+name="python"
+docker build --tag $tag .
+docker stop $name
+docker rm $name
+docker run -d -v "$(pwd):/opt/scripts" --name $name $tag tail -f /dev/null
+docker exec -it python /bin/bash
