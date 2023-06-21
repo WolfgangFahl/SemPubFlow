@@ -1,0 +1,56 @@
+#!/bin/bash
+# WF 2023-06-21
+if [ "$OPENAI_API_KEY" == "" ]
+then
+  echo "OPENAI_API_KEY env variable needs to be set to a key see https://platform.openai.com/account/api-keys"
+  echo "export OPENAI_API_KEY="
+  exit 1
+fi
+#if [ "$OPENAI_API_ORG" == "" ]
+# then
+#  echo "OPENAI_API_ORG env variable needs to be set  see https://platform.openai.com/account/org-settings"
+#  echo "export OPENAI_API_ORG="
+#  exit 1
+#fi
+
+#
+# test via curl
+#
+viacurl() {
+  curl https://api.openai.com/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [{"role": "user", "content": "Say this is a test!"}],
+       "temperature": 0.7
+     }'
+}
+
+#
+# test via python
+#
+viapython() {
+  code="/tmp/testopenai.py"
+cat << EOF > $code
+import openai
+import os
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# list models
+models = openai.Model.list()
+
+# print the first model's id
+print(models.data[0].id)
+
+# create a chat completion
+chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello world"}])
+
+# print the chat completion
+print(chat_completion.choices[0].message.content)
+EOF
+python $code
+}
+
+viacurl
+viapython

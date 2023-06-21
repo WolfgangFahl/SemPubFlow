@@ -12,7 +12,7 @@ class TestEvent(Basetest):
     test handling events
     """
 
-    def testHomepage(self):
+    def testHomepages(self):
         """
         test homepage handling
         """
@@ -30,3 +30,16 @@ class TestEvent(Basetest):
                 print(f"{count}:{homepage} {is_avail}",flush=True)
                 if count>limit:
                     break
+                
+    def testGetText(self):
+        """
+        test getting the text from a homepage
+        """
+        url="https://escape33-ath.gr/"
+        homepage=Homepage(url)
+        text=homepage.get_text()
+        chars=len(text)
+        lines=text.count('\n')
+        if self.debug:
+            print(f"{url} contains {lines} lines and {chars} chars")
+        self.assertTrue(lines>100)
