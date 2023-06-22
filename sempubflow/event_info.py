@@ -4,6 +4,7 @@ Created on 2023-06-22
 @author: wf
 '''
 from sempubflow.homepage import Homepage
+import json
 class EventInfo:
     """
     check the event metadata
@@ -31,20 +32,22 @@ class EventInfo:
         """
         self.homepage=Homepage(url)
         self.text=self.homepage.get_text()
-        result=None
+        result_dict={}
         if self.llm.available():
             prompt=f""""provide title acronym location and time of event in json format using the template {{
-      "title": 24th International Conference on Semantic Web",
+      "title": Second International Symposium on Wearable Computers",
       "ordinal": 24,
-      "acronym: ISWC 2013",
-      "location": "New York",
+      "acronym: ISWC 1998",
+      "location": "Pittsburgh",
       "homepage": ""
+      "proceedings-doi": "https://doi.org/10.1109/ISWC.1998"
       "iso-code": "US",
-      "region": "NY",
+      "region": "PA",
       "country": "US",
-      "start_date": "2013-05-07",
-      "end_date": "2013-05-09",
+      "start_date": "1998-10-19",
+      "end_date": "1998-10-20",
       }}  described by the following text:{self.text}"""
-            result=self.llm.ask(prompt)
-            return result
+            result_str=self.llm.ask(prompt)
+            result_dict=json.loads(result_str)
+            return result_dict
         

@@ -7,6 +7,7 @@ from nicegui import ui
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
+from sempubflow.dict_edit import DictEdit
 
 class HomePageSelector:
     """
@@ -17,6 +18,10 @@ class HomePageSelector:
         constructor
         """
         self.valid=False
+        self.timeout=3.0
+        ui.label("timeout")
+        self.timeout_slider = ui.slider(min=0.5, max=10).props('label-always').bind_value(self,"timeout")
+        
         self.homepage_input=ui.input(
             label="homepage",
             placeholder="""url of the event's homepage""",
@@ -25,22 +30,23 @@ class HomePageSelector:
         )
         self.homepage_input.props("size=80")
         self.status = ui.label()
-        self.event_details=ui.textarea().props("cols=80")
         self.llm=LLM()
         self.event_info=EventInfo(self.llm)
+        self.event_details=ui.card().tight()
         
     def on_url_change(self,event):
         """
         react on changing the url homepage value
         """
         url=event.sender.value
-        self.valid=Homepage.check_url(url)
+        self.valid=Homepage.check_url(url,timeout=self.timeout)
         if self.valid:
-            event_details=self.event_info.get_meta_data(url)
+            event_dict=self.event_info.get_meta_data(url)
             status_msg=self.event_info.status_msg()
-            self.event_details.set_value(event_details)
+            self.dict_edit=DictEdit(self.event_details,event_dict)
         else:
             status_msg="❌"
+            self.event_details.clear()
         self.status.set_text(status_msg)
         pass
     

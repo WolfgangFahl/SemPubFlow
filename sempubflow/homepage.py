@@ -11,7 +11,7 @@ class Homepage:
     a homepage
     """
     
-    def __init__(self,url:str,timeout:float=1.0):
+    def __init__(self,url:str,timeout:float=2.0):
         self.url=url
         self.timeout=timeout
         

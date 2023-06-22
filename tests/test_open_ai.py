@@ -8,6 +8,7 @@ from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
 import unittest
+import openai
 
 class TestOpenAi(Basetest):
     """
@@ -17,6 +18,13 @@ class TestOpenAi(Basetest):
     def setUp(self, debug=False, profile=True):
         Basetest.setUp(self, debug=debug, profile=profile)
         self.llm=LLM()
+        
+    @unittest.skipIf(Basetest.inPublicCI(), "chatgpt")
+    def testOpenAI(self):    
+        # list models
+        models = openai.Model.list()
+        pass
+
     
     @unittest.skipIf(Basetest.inPublicCI(), "chatgpt")
     def testChatGpt(self):
