@@ -5,6 +5,8 @@ Created on 2023-06-19
 """
 from nicegui import ui
 from sempubflow.homepage import Homepage
+from sempubflow.llm import LLM
+from sempubflow.event_info import EventInfo
 
 class HomePageSelector:
     """
@@ -19,22 +21,24 @@ class HomePageSelector:
             label="homepage",
             placeholder="""url of the event's homepage""",
             on_change=self.on_url_change,
-            validation={"URL invalid": lambda url:self.valid },   
+            validation={"URL invalid": lambda _url:self.valid },   
         )
         self.homepage_input.props("size=80")
         self.status = ui.label()
+        self.event_details=ui.textarea().props("cols=80")
+        self.llm=LLM()
+        self.event_info=EventInfo(self.llm)
         
     def on_url_change(self,event):
         """
+        react on changing the url homepage value
         """
         url=event.sender.value
         self.valid=Homepage.check_url(url)
         if self.valid:
-            homepage=Homepage(url)
-            text=homepage.get_text()
-            chars=len(text)
-            lines=text.count('\n')
-            status_msg=f"✅ {lines} lines and {chars} chars"
+            event_details=self.event_info.get_meta_data(url)
+            status_msg=self.event_info.status_msg()
+            self.event_details.set_value(event_details)
         else:
             status_msg="❌"
         self.status.set_text(status_msg)
@@ -50,7 +54,6 @@ class WebServer:
         constructor
         """
         pass
-
 
     def run(self, host, port):
         """
