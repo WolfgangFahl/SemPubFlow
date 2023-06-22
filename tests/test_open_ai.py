@@ -38,12 +38,14 @@ class TestOpenAi(Basetest):
             
     def testEventInfo(self):
         """
+        test getting event information
         """
-        url="https://escape33-ath.gr/"
+        url="https://www.wp-cape.eu/index.php/resources/escape-series/"
         homepage=Homepage(url)
         text=homepage.get_text()
-        prompt=f""""provide title acronym location and time of event in json format using the template {{
+        prompt=f""""provide title acronym location and time of event in json format for all parts of the series using the template {{
   "title": 24th International Conference on Semantic Web",
+  "ordinal": 24,
   "acronym: ISWC 2013",
   "location": "New York",
   "iso-code": "US",
