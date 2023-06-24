@@ -19,11 +19,12 @@ class DictEdit:
         """
         self.d=d
         with card:
-            for k in d.keys():
-                value=d[k]
-                ui.input(label=k,
-                    value=str(value),
-                    on_change=self.on_input_change).props("size=80")
+            if d:
+                for k in d.keys():
+                    value=d[k]
+                    ui.input(label=k,
+                        value=str(value),
+                        on_change=self.on_input_change).props("size=80")
     
     def on_input_change(self,event):
         """

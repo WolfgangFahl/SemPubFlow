@@ -3,7 +3,7 @@ Created on 2023-06-19
 
 @author: wf
 """
-from nicegui import ui
+from nicegui import Client,ui
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
@@ -19,8 +19,6 @@ class HomePageSelector:
         """
         self.valid=False
         self.timeout=3.0
-        ui.label("timeout")
-        self.timeout_slider = ui.slider(min=0.5, max=10).props('label-always').bind_value(self,"timeout")
         
         self.homepage_input=ui.input(
             label="homepage",
@@ -49,7 +47,7 @@ class HomePageSelector:
             self.event_details.clear()
         self.status.set_text(status_msg)
         pass
-    
+ 
 class WebServer:
     """
     webserver
@@ -60,11 +58,27 @@ class WebServer:
         constructor
         """
         pass
-
+    
+    @staticmethod
+    def menu():
+        ui.link('Semantic Publishing Flow on GitHub', 'https://github.com/WolfgangFahl/SemPubFlow')
+   
+    @ui.page('/')
+    @staticmethod
+    def home():
+        WebServer.menu()
+        homepageSelector=HomePageSelector()
+    
+    @ui.page('/settings')
+    @staticmethod
+    def settings():
+        WebServer.menu()
+        ui.label("timeout")
+        timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
+        #.bind_value(self,"timeout")
+  
     def run(self, host, port):
         """
         run the ui
         """
-        ui.link('Semantic Publishing Flow on GitHub', 'https://github.com/WolfgangFahl/SemPubFlow')
-        self.homepageSelector=HomePageSelector()
         ui.run(title="Semantic Publishing Flow", host=host, port=port, reload=False)
