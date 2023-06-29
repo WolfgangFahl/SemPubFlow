@@ -15,7 +15,7 @@ class TestDblp(Basetest):
         test suggestion of scholars from wikidata endpoint
         """
         search_mask = ScholarSearchMask(given_name="Ste", family_name="Decke")
-        scholars = Wikidata().get_scholar_suggestions(search_mask)
+        scholars = Wikidata(endpoint_url="http://qlever-api.wikidata.dbis.rwth-aachen.de/").get_scholar_suggestions(search_mask)
         print(scholars)
         self.assertGreaterEqual(len(scholars), 5)
         self.assertIsInstance(scholars[0], Scholar)

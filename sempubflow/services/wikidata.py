@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from lodstorage.sparql import SPARQL
 
@@ -7,7 +7,7 @@ from sempubflow.models.scholar import Scholar, ScholarSearchMask
 
 class Wikidata:
 
-    def __init__(self, endpoint_url: str = None):
+    def __init__(self, endpoint_url: Optional[str] = None):
         if endpoint_url is None:
             endpoint_url = "https://qlever.cs.uni-freiburg.de/api/wikidata"
         self.endpoint = SPARQL(endpoint_url)
