@@ -36,8 +36,13 @@ class HomePageSelector:
             on_change=self.on_url_change,
             validation={"URL invalid": lambda _url:self.valid },   
         )
-        self.homepage_input.props("size=80")
-        self.status = ui.label()
+        with ui.element("div").classes("w-full"):
+            with ui.splitter() as splitter:
+                with splitter.before:
+                    self.homepage_input.props("size=80")
+                    self.status = ui.label()
+                with splitter.after:
+                    self.homepage_frame=ui.html("")
         self.llm=LLM()
         self.event_info=EventInfo(self.llm)
         self.event_details=ui.card().tight()
@@ -49,6 +54,8 @@ class HomePageSelector:
         url=event.sender.value
         self.valid=Homepage.check_url(url,timeout=self.timeout)
         if self.valid:
+            self.homepage_frame.content=f"""<iframe width="100%" height="100%" src="{url}"></iframe>
+"""
             event_dict=self.event_info.get_meta_data(url)
             status_msg=self.event_info.status_msg()
             self.dict_edit=DictEdit(self.event_details,event_dict)
