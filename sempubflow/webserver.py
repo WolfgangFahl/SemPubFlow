@@ -17,6 +17,7 @@ from sempubflow.services.dblp import Dblp
 from sempubflow.services.wikidata import Wikidata
 from sempubflow.version import Version
 from sempubflow.users import Users
+from sempubflow.orcid_auth import ORCIDAuth
 
 class HomePageSelector:
     """
@@ -162,12 +163,13 @@ class WebServer:
         """
         constructor
         """
-        
+        self.users=Users()
+        self.orcid_auth=ORCIDAuth()
         pass
-    
+       
         @ui.page('/')
         async def home(client: Client):
-            if not app.storage.user.get('authenticated', False):
+            if not self.authenticated():
                 return RedirectResponse('/login')
             return await self.home(client)
         
@@ -235,7 +237,6 @@ class WebServer:
         timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
         #.bind_value(self,"timeout")
 
-
     async def scholar_search(self,client:Client):
         self.setup_menu()
         scholar_selector = ScholarSelector()
@@ -246,15 +247,19 @@ class WebServer:
         homepageSelector=HomePageSelector()
         pass
     
+    def authenticated(self)->bool:
+        result=app.storage.user.get('authenticated', False)
+        return result
+    
     async def login(self,client:Client):
         def try_login() -> None:  # local function to avoid passing username and password as arguments
-            if Users.check_password(username, password):
+            if self.users.check_password(username.value, password.value):
                 app.storage.user.update({'username': username.value, 'authenticated': True})
                 ui.open('/')
             else:
                 ui.notify('Wrong username or password', color='negative')
 
-        if app.storage.user.get('authenticated', False):
+        if self.authenticated():
             return RedirectResponse('/')
         with ui.card().classes('absolute-center'):
             username = ui.input('Username').on('keydown.enter', try_login)
@@ -266,5 +271,5 @@ class WebServer:
         run the ui with the given command line arguments
         """
         self.args=args
-        ui.run(title=Version.name, host=args.host, port=args.port, show=args.client,reload=False)
+        ui.run(title=Version.name, host=args.host, port=args.port, show=args.client,reload=False,storage_secret=self.orcid_auth.client_secret)
     

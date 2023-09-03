@@ -73,8 +73,8 @@ class Users:
         hashed_password = data.get(username)
         if not hashed_password:
             return False
-        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
-
+        ok=bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return ok
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Manage user data.')
