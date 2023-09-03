@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
+
+from sempubflow.models.affiliation import Affiliation
 
 
 @dataclass
@@ -14,6 +16,12 @@ class Scholar:
     dblp_author_id: Optional[str] = None
     orcid_id: Optional[str] = None
     image: Optional[str] = None
+    affiliation: Optional[List[Affiliation]] = None
+
+
+    @property
+    def name(self) -> str:
+        return f"{self.given_name} {self.family_name}"
 
 
 class ScholarSearchMask(Scholar):
