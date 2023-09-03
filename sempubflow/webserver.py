@@ -5,7 +5,7 @@ Created on 2023-06-19
 """
 from typing import List, Optional
 
-from nicegui import ui
+from nicegui import ui, Client
 
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
@@ -14,7 +14,7 @@ from sempubflow.event_info import EventInfo
 from sempubflow.dict_edit import DictEdit
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.wikidata import Wikidata
-
+from sempubflow.version import Version
 
 class HomePageSelector:
     """
@@ -162,43 +162,86 @@ class WebServer:
         """
         pass
     
-    @staticmethod
-    def menu():
-        ui.link('Semantic Publishing Flow on GitHub', 'https://github.com/WolfgangFahl/SemPubFlow')
-        # https://nicegui.io/documentation/menu
-        #with ui.row().classes('w-full items-center'):
-        #    result = ui.label().classes('mr-auto')
-        #    with ui.button(icon='menu'):
-        #        with ui.menu() as menu:
-        #            ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
-        #            ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
-        #            ui.menu_item('Menu item 3 (keep open)',
-        #                         lambda: result.set_text('Selected item 3'), auto_close=False)
-        #            ui.separator()
-        #            ui.menu_item('Close', on_click=menu.close)
-       
-    @ui.page('/')
-    @staticmethod
-    def home():
-        WebServer.menu()
-        homepageSelector=HomePageSelector()
+        @ui.page('/')
+        async def home(client: Client):
+            return await self.home(client)
+        
+        @ui.page('/settings')
+        async def settings(client:Client):
+            return await self.settings(client)
+        
+        @ui.page('/scholar')
+        async def scholar_search(client:Client):
+            return await self.scholar_search(client)
+        
+    def link_button(self, name: str, target: str, icon_name: str,new_tab:bool=True):
+        """
+        Creates a button with a specified icon that opens a target URL upon being clicked.
     
-    @ui.page('/settings')
-    @staticmethod
-    def settings():
-        WebServer.menu()
+        Args:
+            name (str): The name to be displayed on the button.
+            target (str): The target URL that should be opened when the button is clicked.
+            icon_name (str): The name of the icon to be displayed on the button.
+            new_tab(bool): if True open link in new tab
+    
+        Returns:
+            The button object.
+        """
+        with ui.button(name,icon=icon_name) as button:
+            button.on("click",lambda: (ui.open(target,new_tab=new_tab)))
+        return button
+    
+    def tool_button(self,tooltip:str,icon:str,handler:callable=None,toggle_icon:str=None)->ui.button:
+        """
+        Creates an  button with icon that triggers a specified function upon being clicked.
+    
+        Args:
+            tooltip (str): The tooltip to be displayed.
+            icon (str): The name of the icon to be displayed on the button.
+            handler (function): The function to be called when the button is clicked.
+            toggle_icon (str): The name of an alternative icon to be displayed when the button is clicked.
+    
+        Returns:
+            ui.button: The icon button object.
+            
+        valid icons may be found at:    
+            https://fonts.google.com/icons
+        """
+        icon_button=ui.button("",icon=icon, color='primary').tooltip(tooltip).on("click",handler=handler)  
+        icon_button.toggle_icon=toggle_icon
+        return icon_button   
+    
+    def setup_menu(self):
+        """Adds a link to the project's GitHub page in the web server's menu."""
+        with ui.header() as self.header:
+            self.link_button("home","/","home")
+            self.link_button("scholar","/scholar","scholar")
+            self.link_button("github",Version.cm_url,"bug_report")
+            self.link_button("chat",Version.chat_url,"chat")
+            self.link_button("help",Version.doc_url,"help")
+
+    async def settings(self,client:Client):
+        self.setup_menu()
         ui.label("timeout")
         timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
         #.bind_value(self,"timeout")
 
-    @ui.page('/scholar')
-    @staticmethod
-    def scholar():
-        WebServer.menu()
+
+    async def scholar_search(self,client:Client):
+        self.setup_menu()
         scholar_selector = ScholarSelector()
+        pass
+
+    async def home(self,client:Client):
+        self.setup_menu()
+        homepageSelector=HomePageSelector()
+        pass
   
-    def run(self, host, port):
+  
+    def run(self, args):
         """
-        run the ui
+        run the ui with the given command line arguments
         """
-        ui.run(title="Semantic Publishing Flow", host=host, port=port, reload=False)
+        self.args=args
+        ui.run(title=Version.name, host=args.host, port=args.port, show=args.client,reload=False)
+    

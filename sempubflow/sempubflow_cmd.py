@@ -60,7 +60,7 @@ def main(argv=None):
             webbrowser.open(url)
         if args.serve:
             ws=WebServer()
-            ws.run(host=args.host,port=args.port)
+            ws.run(args)
         
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
