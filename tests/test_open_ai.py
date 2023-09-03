@@ -35,7 +35,7 @@ class TestOpenAi(Basetest):
         debug=True
         if debug:
             print(result)
-        self.assertTrue("As an AI language model" in result)
+        self.assertTrue("OpenAI" in result)
             
     @unittest.skipIf(Basetest.inPublicCI(), "event info")
     def testEventInfo(self):

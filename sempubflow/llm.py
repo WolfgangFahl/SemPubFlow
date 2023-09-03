@@ -3,8 +3,10 @@ Created on 2023-06-23
 
 @author: wf
 '''
+import json
 import openai
 import os
+from pathlib import Path
 
 class LLM:
     """
@@ -20,9 +22,19 @@ class LLM:
             model(str): the model to use
         """
         self.model=model
-        if api_key is None:
-            api_key=os.getenv("OPENAI_API_KEY")
-        openai.api_key = api_key
+        # Load the API key from the environment or a JSON file
+        openai_api_key = os.getenv('OPENAI_API_KEY')
+        json_file = Path.home() / ".openai" / "openai_api_key.json"
+
+        if openai_api_key is None and json_file.is_file():
+            with open(json_file, "r") as file:
+                data = json.load(file)
+                openai_api_key = data.get('OPENAI_API_KEY')
+
+        if openai_api_key is None:
+            raise ValueError("No OpenAI API key found. Please set the 'OPENAI_API_KEY' environment variable or store it in `~/.openai/openai_api_key.json`.")
+        # set the global api key
+        openai.api_key=openai_api_key
         
     def available(self):
         """
@@ -45,4 +57,3 @@ class LLM:
         chat_completion = openai.ChatCompletion.create(model=self.model, messages=[{"role": "user", "content": prompt}])
         result=chat_completion.choices[0].message.content
         return result
-        
