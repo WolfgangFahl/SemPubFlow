@@ -36,7 +36,7 @@ class HomePageSelector:
             on_change=self.on_url_change,
             validation={"URL invalid": lambda _url:self.valid },   
         )
-        with ui.element("div").classes("w-full"):
+        with ui.element("div").classes("w-full h-full"):
             with ui.splitter() as splitter:
                 with splitter.before:
                     self.homepage_input.props("size=80")
