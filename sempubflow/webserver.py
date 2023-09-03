@@ -73,37 +73,43 @@ class ScholarSelector:
         Display input fields for scholar data with autosuggestion
         """
         scholar = self.selected_scholar if self.selected_scholar else Scholar()
-        with ui.splitter() as splitter:
-            with splitter.before:
-                with ui.row():
-                    self.given_name_input = ui.input(
-                            label="given_name",
-                            placeholder="""given name""",
-                            on_change=self.suggest_scholars,
-                            value=scholar.given_name
-                    )
-                    self.family_name_input = ui.input(
-                            label="family_name",
-                            placeholder="""family name""",
-                            on_change=self.suggest_scholars,
-                            value=scholar.family_name
-                    )
-                with ui.row():
-                    self.identifier_type_input = ui.select(
-                            options={"wikidata_id": "Wikidata", "dblp_author_id": "dblp", "orcid_id": "ORCID"},
-                            value="wikidata_id",
-                            on_change=self.suggest_scholars,
-                    )
-                    self.identifier_input = ui.input(
-                            label="identifier",
-                            placeholder="""identifier-""",
-                            on_change=self.suggest_scholars,
-                            value=scholar.wikidata_id
-                    )
-            with splitter.after:
-                self.suggestion_list = ui.column()
+        with ui.element("div").classes("w-full"):
+            with ui.splitter().classes("h-full  w-full") as splitter:
+                with splitter.before:
+                    with ui.row():
+                        self.given_name_input = ui.input(
+                                label="given_name",
+                                placeholder="""given name""",
+                                on_change=self.suggest_scholars,
+                                value=scholar.given_name
+                        )
+                        self.family_name_input = ui.input(
+                                label="family_name",
+                                placeholder="""family name""",
+                                on_change=self.suggest_scholars,
+                                value=scholar.family_name
+                        )
+                    with ui.row():
+                        self.identifier_type_input = ui.select(
+                                options={"wikidata_id": "Wikidata", "dblp_author_id": "dblp", "orcid_id": "ORCID"},
+                                value="wikidata_id",
+                                on_change=self.suggest_scholars,
+                        )
+                        self.identifier_input = ui.input(
+                                label="identifier",
+                                placeholder="""identifier-""",
+                                on_change=self.suggest_scholars,
+                                value=scholar.wikidata_id
+                        )
+                with splitter.after:
+                    with ui.element('div').classes('columns-2 w-full h-full gap-2'):
+                        ui.label("wikidata")
+                        self.suggestion_list_wd = ui.column().classes("rounded-md border-2 p-3")
 
-    def suggest_scholars(self) -> List[Scholar]:
+                        ui.label("dblp")
+                        self.suggestion_list_dblp = ui.column().classes("rounded-md border-2")
+
+    def suggest_scholars(self):
         """
         based on given input suggest potential scholars
 
@@ -111,17 +117,21 @@ class ScholarSelector:
             List of scholars
         """
         search_mask = self._get_search_mask()
-        self.suggestion_list.clear()
-        suggested_scholars = Dblp().get_scholar_suggestions(search_mask)
-        # suggested_scholars = Dblp().get_scholar_suggestions(search_mask)
-        #ToDo: merge suggestion results
-        with self.suggestion_list:
-            if len(suggested_scholars) <= 10:
-                for scholar in suggested_scholars:
-                    ScholarSuggestion(scholar=scholar, on_select=self.select_scholar_suggestion)
+        suggested_scholars_dblp = Dblp().get_scholar_suggestions(search_mask)
+        self.update_suggestion_list(self.suggestion_list_dblp, suggested_scholars_dblp)
+        suggested_scholars_wd = Wikidata().get_scholar_suggestions(search_mask)
+        self.update_suggestion_list(self.suggestion_list_wd, suggested_scholars_wd)
+
+    def update_suggestion_list(self, container: ui.column, suggestions: List[Scholar]):
+        container.clear()
+        with container:
+            if len(suggestions) <= 10:
+                with ui.scroll_area():
+                    for scholar in suggestions:
+                        ScholarSuggestion(scholar=scholar, on_select=self.select_scholar_suggestion)
             else:
                 ui.spinner(size='lg')
-                ui.label(f"{'>' if len(suggested_scholars) == 10000 else ''}{len(suggested_scholars)} matches...")
+                ui.label(f"{'>' if len(suggestions) == 10000 else ''}{len(suggestions)} matches...")
         return []
 
     def select_scholar_suggestion(self, scholar: Scholar):
@@ -188,9 +198,13 @@ class WebServer:
         Returns:
             The button object.
         """
-        with ui.button(name,icon=icon_name) as button:
-            button.on("click",lambda: (ui.open(target,new_tab=new_tab)))
-        return button
+
+        btn_classes = "q-btn q-btn-item non-selectable no-outline q-btn--standard q-btn--rectangle bg-primary text-white q-btn--actionable q-focusable q-hoverable"
+        with ui.link(text="", target=target, new_tab=True).classes(btn_classes) as link:
+            link.style(add="text-decoration:none")
+            with ui.row():
+                ui.icon(icon_name)
+                ui.label(name)
     
     def tool_button(self,tooltip:str,icon:str,handler:callable=None,toggle_icon:str=None)->ui.button:
         """

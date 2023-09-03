@@ -37,46 +37,48 @@ class Dblp:
 
         response = requests.request("GET", self.endpoint_url, headers=headers, data=payload, params=params)
         qres = response.json()
-        hits = [hit.get("info").get("url") for hit in qres.get("result").get("hits").get("hit")]
-        scholar_urls = "\n".join([f"<{url}>" for url in hits])
-        query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX dblp: <https://dblp.org/rdf/schema#>
-            PREFIX datacite: <http://purl.org/spar/datacite/>
-            PREFIX litre: <http://purl.org/spar/literal/> 
-            SELECT DISTINCT ?author ?label ?dblp_author_id ?wikidata_id ?orcid_id WHERE {{
-            VALUES ?author {{
-                    {scholar_urls}
-            }}
-                ?author a dblp:Person.
-                ?author rdfs:label ?label
-              OPTIONAL{{
-                OPTIONAL{{
-                ?author datacite:hasIdentifier ?identifier .
-                ?identifier datacite:usesIdentifierScheme datacite:dblp.
-                ?identifier litre:hasLiteralValue ?dblp_author_id .
-                }}
-                OPTIONAL{{
-                ?author datacite:hasIdentifier ?identifier2 .
-                ?identifier2 datacite:usesIdentifierScheme datacite:wikidata.
-                ?identifier2 litre:hasLiteralValue ?wikidata_id .
-                }}
-                OPTIONAL{{
-                ?author datacite:hasIdentifier ?identifier3 .
-                ?identifier3 datacite:usesIdentifierScheme datacite:orcid.
-                ?identifier3 litre:hasLiteralValue ?orcid_id .
-                }}
-              }}
-            }}
-        """
-        lod = self.sparql_endpoint.queryAsListOfDicts(query)
+        qres_hits = qres.get("result").get("hits").get("hit")
         res = []
-        for d in lod:
-            scholar = Scholar(
-                    label=d.get("label"),
-                    wikidata_id=d.get("wikidata_id"),
-                    dblp_author_id=d.get("dblp_author_id"),
-                    orcid_id=d.get("orcid_id")
-            )
-            res.append(scholar)
+        if qres_hits is not None:
+            hits = [hit.get("info").get("url") for hit in qres_hits]
+            scholar_urls = "\n".join([f"<{url}>" for url in hits])
+            query = f"""
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX dblp: <https://dblp.org/rdf/schema#>
+                PREFIX datacite: <http://purl.org/spar/datacite/>
+                PREFIX litre: <http://purl.org/spar/literal/> 
+                SELECT DISTINCT ?author ?label ?dblp_author_id ?wikidata_id ?orcid_id WHERE {{
+                VALUES ?author {{
+                        {scholar_urls}
+                }}
+                    ?author a dblp:Person.
+                    ?author rdfs:label ?label
+                  OPTIONAL{{
+                    OPTIONAL{{
+                    ?author datacite:hasIdentifier ?identifier .
+                    ?identifier datacite:usesIdentifierScheme datacite:dblp.
+                    ?identifier litre:hasLiteralValue ?dblp_author_id .
+                    }}
+                    OPTIONAL{{
+                    ?author datacite:hasIdentifier ?identifier2 .
+                    ?identifier2 datacite:usesIdentifierScheme datacite:wikidata.
+                    ?identifier2 litre:hasLiteralValue ?wikidata_id .
+                    }}
+                    OPTIONAL{{
+                    ?author datacite:hasIdentifier ?identifier3 .
+                    ?identifier3 datacite:usesIdentifierScheme datacite:orcid.
+                    ?identifier3 litre:hasLiteralValue ?orcid_id .
+                    }}
+                  }}
+                }}
+            """
+            lod = self.sparql_endpoint.queryAsListOfDicts(query)
+            for d in lod:
+                scholar = Scholar(
+                        label=d.get("label"),
+                        wikidata_id=d.get("wikidata_id"),
+                        dblp_author_id=d.get("dblp_author_id"),
+                        orcid_id=d.get("orcid_id")
+                )
+                res.append(scholar)
         return res
