@@ -13,7 +13,7 @@ class LLM:
     large language model
     """
     
-    def __init__(self,api_key:str=None,model="gpt-3.5-turbo"):
+    def __init__(self,api_key:str=None,model="gpt-3.5-turbo",force_key:bool=False):
         """
         constructor
         
@@ -32,7 +32,10 @@ class LLM:
                 openai_api_key = data.get('OPENAI_API_KEY')
 
         if openai_api_key is None:
-            raise ValueError("No OpenAI API key found. Please set the 'OPENAI_API_KEY' environment variable or store it in `~/.openai/openai_api_key.json`.")
+            if force_key:
+                raise ValueError("No OpenAI API key found. Please set the 'OPENAI_API_KEY' environment variable or store it in `~/.openai/openai_api_key.json`.")
+            else:
+                return
         # set the global api key
         openai.api_key=openai_api_key
         
