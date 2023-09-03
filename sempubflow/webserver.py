@@ -163,7 +163,6 @@ class ScholarSelector:
         )
         return search_mask
 
- 
 class WebServer:
     """
     webserver
@@ -185,6 +184,8 @@ class WebServer:
         
         @ui.page('/settings')
         async def settings(client:Client):
+            if not self.authenticated():
+                return RedirectResponse('/login')
             return await self.settings(client)
         
         @ui.page('/scholar')
@@ -244,6 +245,8 @@ class WebServer:
             self.link_button("github",Version.cm_url,"bug_report")
             self.link_button("chat",Version.chat_url,"chat")
             self.link_button("help",Version.doc_url,"help")
+            username=app.storage.user.get('username', '?')
+            ui.label(username)
 
     async def settings(self,client:Client):
         self.setup_menu()
@@ -275,6 +278,7 @@ class WebServer:
 
         if self.authenticated():
             return RedirectResponse('/')
+        self.setup_menu()
         with ui.card().classes('absolute-center'):
             username = ui.input('Username').on('keydown.enter', try_login)
             password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
