@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass, fields
 from datetime import date
 from enum import Enum
@@ -95,5 +96,9 @@ class CustomDict(dict):
         for field, value in data:
             if isinstance(value, EventType):
                 value = value.value
+            elif isinstance(value, datetime.datetime):
+                value = value.isoformat()
+            elif isinstance(value, datetime.date):
+                value = value.isoformat()
             res.append((field, value))
         super().__init__(x for x in res if x[1] is not None)
