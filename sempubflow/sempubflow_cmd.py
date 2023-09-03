@@ -56,7 +56,7 @@ def main(argv=None):
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
         if args.client:
-            url=f"http://{args.host}:{args.port}"
+            url = f"http://{args.host}:{args.port}"
             webbrowser.open(url)
         if args.serve:
             ws=WebServer()

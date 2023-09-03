@@ -42,6 +42,21 @@ class TestORCIDAuth(Basetest):
                     auth.open()
                     self.assertIsNotNone(auth.token)
 
+    def test_expanded_search(self):
+        """
+        tests expanded-seachr api
+        """
+        import requests
+
+        url = "https://pub.orcid.org/v3.0/expanded-search/?q=family-name=Decker+AND+given-name=Stefan&rows=7"
+        auth = ORCIDAuth()
+        payload = {}
+        headers = {'Authorization': auth.client_secret}
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        print(response.text)
+
 if __name__ == "__main__":
     TestORCIDAuth().run()
 
