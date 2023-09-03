@@ -20,6 +20,7 @@ dependencies = [
     'pylodstorage',
     # https://pypi.org/project/oauthlib/
   	"oauthlib",
+    "requests_oauthlib",
     'pylodstorage',
     'Pygments'
 ]
