@@ -1,13 +1,16 @@
-'''
+"""
 Created on 2023-07-14
 
 @author: wf
-'''
+"""
 import os
 import json
+from typing import Optional
+
 from oauthlib.oauth2 import BackendApplicationClient
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
+
 
 class ORCIDAuth:
     """A class for handling ORCID API authentication.
@@ -42,6 +45,8 @@ class ORCIDAuth:
         self.base_url = 'https://sandbox.orcid.org' if sandbox else 'https://orcid.org'
         self.token_url = f'{self.base_url}/oauth/token'
         self.client = BackendApplicationClient(client_id=self.client_id)
+        self.oauth: Optional[OAuth2Session] = None
+        self.token = None
         
     def open(self):    
         """
@@ -69,8 +74,10 @@ class ORCIDAuth:
             dict: The access token.
         """
 
-        token = self.oauth.fetch_token(token_url=self.token_url, 
-                                       auth=HTTPBasicAuth(self.client_id, self.client_secret))
+        token = self.oauth.fetch_token(
+                token_url=self.token_url,
+                auth=HTTPBasicAuth(self.client_id, self.client_secret)
+        )
         return token
 
     def get_authorization_url(self, redirect_uri):
@@ -83,8 +90,7 @@ class ORCIDAuth:
             tuple: The authorization URL and the state.
         """
 
-        authorization_url, state = self.oauth.authorization_url(self.token_url,
-                                                                redirect_uri=redirect_uri)
+        authorization_url, state = self.oauth.authorization_url(self.token_url, redirect_uri=redirect_uri)
         return authorization_url, state
 
     def fetch_token(self, authorization_response, redirect_uri):
