@@ -22,7 +22,9 @@ dependencies = [
   	"oauthlib",
     "requests-oauthlib",
     'pylodstorage',
-    'Pygments'
+    'Pygments',
+    # https://pypi.org/project/bcrypt/
+    'bcrypt'
 ]
 
 requires-python = ">=3.8"

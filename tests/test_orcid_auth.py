@@ -9,7 +9,6 @@ import os
 import requests
 from sempubflow.orcid_auth import ORCIDAuth
 
-active=True
 
 class TestORCIDAuth(Basetest):
     """Unit test suite for testing the ORCIDAuth class.
@@ -22,9 +21,8 @@ class TestORCIDAuth(Basetest):
         """Set up test fixtures, if any."""
         super().setUp()
         self.config_path = os.path.join(os.path.expanduser('~'), '.orcid', 'sempubflow.json')
-        active=os.path.isfile(self.config_path)
     
-    @unittest.skipIf(not active,"no creds")
+    @unittest.skipIf(Basetest.inPublicCI(),"public CI")
     def test_load_config(self):
         """Test if the client_id and client_secret are loaded correctly from the configuration file.
 
@@ -34,7 +32,7 @@ class TestORCIDAuth(Basetest):
         self.assertTrue(hasattr(auth, 'client_id'))
         self.assertTrue(hasattr(auth, 'client_secret'))
 
-    @unittest.skipIf(not active,"no creds")
+    @unittest.skipIf(Basetest.inPublicCI(),"public CI")
     def test_authentication(self):
         """Test if the authentication process successfully obtains a token.
 
@@ -46,7 +44,7 @@ class TestORCIDAuth(Basetest):
                 auth.open()
                 self.assertIsNotNone(auth.token)
 
-    @unittest.skipIf(not active,"no creds")
+    @unittest.skipIf(Basetest.inPublicCI(),"public CI")
     def test_expanded_search(self):
         """
         tests expanded-seachr api
