@@ -18,6 +18,9 @@ dependencies = [
     'openai',
     'orjson',
     'pylodstorage',
+    # https://pypi.org/project/oauthlib/
+  	"oauthlib",
+    'pylodstorage',
     'Pygments'
 ]
 

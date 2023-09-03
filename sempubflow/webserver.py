@@ -165,7 +165,18 @@ class WebServer:
     @staticmethod
     def menu():
         ui.link('Semantic Publishing Flow on GitHub', 'https://github.com/WolfgangFahl/SemPubFlow')
-   
+        # https://nicegui.io/documentation/menu
+        #with ui.row().classes('w-full items-center'):
+        #    result = ui.label().classes('mr-auto')
+        #    with ui.button(icon='menu'):
+        #        with ui.menu() as menu:
+        #            ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
+        #            ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
+        #            ui.menu_item('Menu item 3 (keep open)',
+        #                         lambda: result.set_text('Selected item 3'), auto_close=False)
+        #            ui.separator()
+        #            ui.menu_item('Close', on_click=menu.close)
+       
     @ui.page('/')
     @staticmethod
     def home():
@@ -182,7 +193,7 @@ class WebServer:
 
     @ui.page('/scholar')
     @staticmethod
-    def home():
+    def scholar():
         WebServer.menu()
         scholar_selector = ScholarSelector()
   

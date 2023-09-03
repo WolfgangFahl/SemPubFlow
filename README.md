@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/github/license/WolfgangFahl/SemPubFlow.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 SemPubFlow is a metadata-first publishing pipeline designed to streamline the process of scientific publishing. 
-The system is specifically tailored towards the needs of scientific outlets such as CEUR-WS, ACM, or DROPS.
+The system is specifically tailored towards the needs of scientific outlets such as CEUR-WS, ACL Anthology, or DROPS.
 
 ## Features
 
