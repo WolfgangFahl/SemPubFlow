@@ -13,6 +13,7 @@ from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
 from sempubflow.dict_edit import DictEdit
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
+from sempubflow.services.dblp import Dblp
 from sempubflow.services.wikidata import Wikidata
 from sempubflow.version import Version
 
@@ -111,7 +112,7 @@ class ScholarSelector:
         """
         search_mask = self._get_search_mask()
         self.suggestion_list.clear()
-        suggested_scholars = Wikidata().get_scholar_suggestions(search_mask)
+        suggested_scholars = Dblp().get_scholar_suggestions(search_mask)
         # suggested_scholars = Dblp().get_scholar_suggestions(search_mask)
         #ToDo: merge suggestion results
         with self.suggestion_list:
