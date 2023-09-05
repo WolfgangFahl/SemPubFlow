@@ -41,11 +41,12 @@ class HomePageSelector:
                 with splitter.before:
                     self.homepage_input.props("size=80")
                     self.status = ui.label()
+                    self.llm=LLM()
+                    self.event_info=EventInfo(self.llm)
+                    self.event_details=ui.card().tight()
                 with splitter.after:
                     self.homepage_frame=ui.html("").classes("w-full h-screen")
-        self.llm=LLM()
-        self.event_info=EventInfo(self.llm)
-        self.event_details=ui.card().tight()
+       
         
     def on_url_change(self,event):
         """
