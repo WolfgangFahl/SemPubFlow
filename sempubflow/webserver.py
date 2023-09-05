@@ -42,7 +42,7 @@ class HomePageSelector:
                     self.homepage_input.props("size=80")
                     self.status = ui.label()
                 with splitter.after:
-                    self.homepage_frame=ui.html("")
+                    self.homepage_frame=ui.html("").classes("w-full h-screen")
         self.llm=LLM()
         self.event_info=EventInfo(self.llm)
         self.event_details=ui.card().tight()
@@ -296,5 +296,12 @@ class WebServer:
         run the ui with the given command line arguments
         """
         self.args=args
-        ui.run(title=Version.name, host=args.host, port=args.port, show=args.client,reload=False,storage_secret=self.orcid_auth.client_secret)
+        ui.run(
+                title=Version.name,
+                host=args.host,
+                port=args.port,
+                show=args.client,
+                reload=False,
+                storage_secret=self.orcid_auth.client_secret
+        )
     
