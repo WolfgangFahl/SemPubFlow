@@ -13,7 +13,7 @@ class Dblp:
 
     def __init__(self, sparql_endpoint_url: Optional[str] = None, endpoint_url: Optional[str] = None):
         if sparql_endpoint_url is None:
-            sparql_endpoint_url = "https://qlever.cs.uni-freiburg.de/api/dblp"
+            sparql_endpoint_url = "https://sparql.dblp.org/sparql"
         if endpoint_url is None:
             endpoint_url = "https://dblp.uni-trier.de/search/author/api"
         self.sparql_endpoint = SPARQL(sparql_endpoint_url)
