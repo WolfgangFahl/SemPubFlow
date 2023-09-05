@@ -126,10 +126,11 @@ class ScholarSelector:
             List of scholars
         """
         search_mask = self._get_search_mask()
-        suggested_scholars_dblp = Dblp().get_scholar_suggestions(search_mask)
-        self.update_suggestion_list(self.suggestion_list_dblp, suggested_scholars_dblp)
-        suggested_scholars_wd = Wikidata().get_scholar_suggestions(search_mask)
-        self.update_suggestion_list(self.suggestion_list_wd, suggested_scholars_wd)
+        if len(search_mask.name) > 4:  # quick fix to avoid queries on empty input fields
+            suggested_scholars_dblp = Dblp().get_scholar_suggestions(search_mask)
+            self.update_suggestion_list(self.suggestion_list_dblp, suggested_scholars_dblp)
+            suggested_scholars_wd = Wikidata().get_scholar_suggestions(search_mask)
+            self.update_suggestion_list(self.suggestion_list_wd, suggested_scholars_wd)
 
     def update_suggestion_list(self, container: ui.column, suggestions: List[Scholar]):
         container.clear()
@@ -169,6 +170,7 @@ class ScholarSelector:
                 **ids
         )
         return search_mask
+
 
 class WebServer:
     """
