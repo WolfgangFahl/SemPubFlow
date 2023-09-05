@@ -61,4 +61,4 @@ class ScholarSuggestion(Element):
             with ui.element('div'):
                 ui.element('i').classes('ai ai-orcid')
                 ui.link(text=self.scholar.orcid_id,
-                        target=f"https://orcid.org/{self.scholar.dblp_author_id}", new_tab=True)
+                        target=f"https://orcid.org/{self.scholar.orcid_id}", new_tab=True)
