@@ -16,7 +16,7 @@ from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.dblp import Dblp
 from sempubflow.services.wikidata import Wikidata
 from sempubflow.version import Version
-from sempubflow.users import Users
+from ngwidgets.users import Users
 from sempubflow.orcid_auth import ORCIDAuth
 
 class HomePageSelector:
@@ -172,7 +172,6 @@ class ScholarSelector:
         )
         return search_mask
 
-
 class WebServer:
     """
     webserver
@@ -182,7 +181,7 @@ class WebServer:
         """
         constructor
         """
-        self.users=Users()
+        self.users=Users("~/.sempubflow/")
         self.orcid_auth=ORCIDAuth()
         pass
        
