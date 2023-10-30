@@ -5,8 +5,8 @@ Created on 2023-06-19
 """
 from typing import List, Optional
 from fastapi.responses import RedirectResponse
-from nicegui import app,ui, Client
-
+from nicegui import app,storage,ui, Client
+from ngwidgets.input_webserver import InputWebserver
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
@@ -18,6 +18,7 @@ from sempubflow.services.wikidata import Wikidata
 from sempubflow.version import Version
 from ngwidgets.users import Users
 from sempubflow.orcid_auth import ORCIDAuth
+from ngwidgets.webserver import WebserverConfig
 
 class HomePageSelector:
     """
@@ -172,15 +173,22 @@ class ScholarSelector:
         )
         return search_mask
 
-class WebServer:
+class WebServer(InputWebserver):
     """
     webserver
     """
+    
+    @classmethod
+    def get_config(cls)->WebserverConfig:
+        copy_right="(c)2023 Wolfgang Fahl"
+        config=WebserverConfig(copy_right=copy_right,version=Version(),default_port=9857)
+        return config
 
     def __init__(self):
         """
         constructor
         """
+        InputWebserver.__init__(self,config=WebServer.get_config())
         self.users=Users("~/.sempubflow/")
         self.orcid_auth=ORCIDAuth()
         pass
@@ -204,58 +212,11 @@ class WebServer:
         @ui.page('/login')
         async def login(client:Client) -> None:    
             return await self.login(client)
-        
-    def link_button(self, name: str, target: str, icon_name: str,new_tab:bool=True):
-        """
-        Creates a button with a specified icon that opens a target URL upon being clicked.
     
-        Args:
-            name (str): The name to be displayed on the button.
-            target (str): The target URL that should be opened when the button is clicked.
-            icon_name (str): The name of the icon to be displayed on the button.
-            new_tab(bool): if True open link in new tab
-    
-        Returns:
-            The button object.
-        """
-
-        btn_classes = "q-btn q-btn-item non-selectable no-outline q-btn--standard q-btn--rectangle bg-primary text-white q-btn--actionable q-focusable q-hoverable"
-        with ui.link(text="", target=target, new_tab=True).classes(btn_classes) as link:
-            link.style(add="text-decoration:none")
-            with ui.row():
-                ui.icon(icon_name)
-                ui.label(name)
-    
-    def tool_button(self,tooltip:str,icon:str,handler:callable=None,toggle_icon:str=None)->ui.button:
-        """
-        Creates an  button with icon that triggers a specified function upon being clicked.
-    
-        Args:
-            tooltip (str): The tooltip to be displayed.
-            icon (str): The name of the icon to be displayed on the button.
-            handler (function): The function to be called when the button is clicked.
-            toggle_icon (str): The name of an alternative icon to be displayed when the button is clicked.
-    
-        Returns:
-            ui.button: The icon button object.
-            
-        valid icons may be found at:    
-            https://fonts.google.com/icons
-        """
-        icon_button=ui.button("",icon=icon, color='primary').tooltip(tooltip).on("click",handler=handler)  
-        icon_button.toggle_icon=toggle_icon
-        return icon_button   
-    
-    def setup_menu(self):
-        """Adds a link to the project's GitHub page in the web server's menu."""
-        with ui.header() as self.header:
-            self.link_button("home","/","home")
-            self.link_button("scholar","/scholar","scholar")
-            self.link_button("github",Version.cm_url,"bug_report")
-            self.link_button("chat",Version.chat_url,"chat")
-            self.link_button("help",Version.doc_url,"help")
-            username=app.storage.user.get('username', '?')
-            ui.label(username)
+    def configure_menu(self):
+        self.link_button("scholar","/scholar","scholar")
+        username=app.storage.user.get('username', '?')
+        ui.label(username)
 
     async def settings(self,client:Client):
         self.setup_menu()
@@ -265,12 +226,12 @@ class WebServer:
 
     async def scholar_search(self,client:Client):
         self.setup_menu()
-        scholar_selector = ScholarSelector()
+        self.scholar_selector = ScholarSelector()
         pass
 
     async def home(self,client:Client):
         self.setup_menu()
-        homepageSelector=HomePageSelector()
+        self.homepageSelector=HomePageSelector()
         pass
     
     def authenticated(self)->bool:
@@ -293,17 +254,7 @@ class WebServer:
             password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
             ui.button('Log in', on_click=try_login)
   
-    def run(self, args):
-        """
-        run the ui with the given command line arguments
-        """
-        self.args=args
-        ui.run(
-                title=Version.name,
-                host=args.host,
-                port=args.port,
-                show=args.client,
-                reload=False,
-                storage_secret=self.orcid_auth.client_secret
-        )
+    def configure_run(self):
+        self.args.storage_secret=self.orcid_auth.client_secret
+        pass
     
