@@ -5,7 +5,7 @@ Created on 2023-06-19
 """
 from typing import List, Optional
 from fastapi.responses import RedirectResponse
-from nicegui import app,storage,ui, Client
+from nicegui import app,ui, Client
 from ngwidgets.input_webserver import InputWebserver
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
@@ -19,6 +19,7 @@ from sempubflow.version import Version
 from ngwidgets.users import Users
 from sempubflow.orcid_auth import ORCIDAuth
 from ngwidgets.webserver import WebserverConfig
+from ngwidgets.login import Login
 
 class HomePageSelector:
     """
@@ -189,19 +190,20 @@ class WebServer(InputWebserver):
         constructor
         """
         InputWebserver.__init__(self,config=WebServer.get_config())
-        self.users=Users("~/.sempubflow/")
+        users=Users("~/.sempubflow/")
+        self.login=Login(self,users)
         self.orcid_auth=ORCIDAuth()
         pass
        
         @ui.page('/')
         async def home(client: Client):
-            if not self.authenticated():
+            if not self.login.authenticated():
                 return RedirectResponse('/login')
             return await self.home(client)
         
         @ui.page('/settings')
         async def settings(client:Client):
-            if not self.authenticated():
+            if not self.login.authenticated():
                 return RedirectResponse('/login')
             return await self.settings(client)
         
@@ -211,7 +213,7 @@ class WebServer(InputWebserver):
         
         @ui.page('/login')
         async def login(client:Client) -> None:    
-            return await self.login(client)
+            return await self.login.login(client)
     
     def configure_menu(self):
         self.link_button("scholar","/scholar","scholar")
@@ -233,27 +235,7 @@ class WebServer(InputWebserver):
         self.setup_menu()
         self.homepageSelector=HomePageSelector()
         pass
-    
-    def authenticated(self)->bool:
-        result=app.storage.user.get('authenticated', False)
-        return result
-    
-    async def login(self,client:Client):
-        def try_login() -> None:  # local function to avoid passing username and password as arguments
-            if self.users.check_password(username.value, password.value):
-                app.storage.user.update({'username': username.value, 'authenticated': True})
-                ui.open('/')
-            else:
-                ui.notify('Wrong username or password', color='negative')
-
-        if self.authenticated():
-            return RedirectResponse('/')
-        self.setup_menu()
-        with ui.card().classes('absolute-center'):
-            username = ui.input('Username').on('keydown.enter', try_login)
-            password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
-            ui.button('Log in', on_click=try_login)
-  
+      
     def configure_run(self):
         self.args.storage_secret=self.orcid_auth.client_secret
         pass
