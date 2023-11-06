@@ -2,7 +2,7 @@ import unittest
 
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.dblp import Dblp
-from tests.basetest import Basetest
+from basetest import Basetest
 
 
 class TestDblp(Basetest):

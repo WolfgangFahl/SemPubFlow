@@ -3,7 +3,7 @@ Created on 2023-06-19
 
 @author: wf
 """
-from tests.basetest import Basetest
+from ngwidgets.basetest import Basetest
 from sempubflow.jsoncache import JsonCacheManager
 from sempubflow.homepage import Homepage
 

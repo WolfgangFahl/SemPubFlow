@@ -3,7 +3,7 @@ Created on 2023-06-21
 
 @author: wf
 '''
-from tests.basetest import Basetest
+from ngwidgets.basetest import Basetest
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo

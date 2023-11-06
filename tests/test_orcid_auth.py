@@ -3,7 +3,7 @@ Created on 2023-07-14
 
 @author: wf
 '''
-from tests.basetest import Basetest
+from ngwidgets.basetest import Basetest
 import unittest
 import os
 import requests
