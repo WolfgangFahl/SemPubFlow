@@ -11,7 +11,7 @@ from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
-from sempubflow.dict_edit import DictEdit
+from ngwidgets.dict_edit import DictEdit
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.dblp import Dblp
 from sempubflow.services.wikidata import Wikidata
