@@ -61,7 +61,8 @@ class HomePageSelector:
 """
             event_dict=self.event_info.get_meta_data(url)
             status_msg=self.event_info.status_msg()
-            self.dict_edit=DictEdit(self.event_details,event_dict)
+            with self.event_details:
+                self.dict_edit=DictEdit(event_dict)
         else:
             status_msg="❌"
             self.event_details.clear()
@@ -204,17 +205,17 @@ class WebServer(InputWebserver):
         async def home(client: Client):
             if not self.login.authenticated():
                 return RedirectResponse('/login')
-            return await self.home(client)
+            return await self.home()
         
         @ui.page('/settings')
         async def settings(client:Client):
             if not self.login.authenticated():
                 return RedirectResponse('/login')
-            return await self.settings(client)
+            return await self.settings()
         
         @ui.page('/scholar')
         async def scholar_search(client:Client):
-            return await self.scholar_search(client)
+            return await self.scholar_search()
         
         @ui.page('/login')
         async def login(client:Client) -> None:    
@@ -225,21 +226,22 @@ class WebServer(InputWebserver):
         username=app.storage.user.get('username', '?')
         ui.label(username)
 
-    async def settings(self,client:Client):
-        self.setup_menu()
-        ui.label("timeout")
-        timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
-        #.bind_value(self,"timeout")
+    async def settings(self):
+        def show():
+            ui.label("timeout")
+            self.timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
+            #.bind_value(self,"timeout")
+        await self.setup_content_div(show)
 
-    async def scholar_search(self,client:Client):
-        self.setup_menu()
-        self.scholar_selector = ScholarSelector()
-        pass
+    async def scholar_search(self):
+        def show():
+            self.scholar_selector = ScholarSelector()
+        await self.setup_content_div(show)
 
-    async def home(self,client:Client):
-        self.setup_menu()
-        self.homepageSelector=HomePageSelector()
-        pass
+    async def home(self):
+        def show():
+            self.homepageSelector=HomePageSelector()
+        await self.setup_content_div(show)
       
     def configure_run(self):
         self.args.storage_secret=self.orcid_auth.client_secret

@@ -2,7 +2,7 @@ import unittest
 
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.dblp import Dblp
-from basetest import Basetest
+from ngwidgets.basetest import Basetest
 
 
 class TestDblp(Basetest):
