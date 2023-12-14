@@ -10,6 +10,7 @@ from ngwidgets.input_webserver import InputWebserver
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
+from sempubflow.elements import proceedings_form
 from sempubflow.event_info import EventInfo
 from ngwidgets.dict_edit import DictEdit
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
@@ -217,12 +218,17 @@ class WebServer(InputWebserver):
         async def scholar_search(client:Client):
             return await self.scholar_search()
         
+        @ui.page('/create_‚volume')
+        async def create_volume(client:Client):
+            return await self.create_volume()
+        
         @ui.page('/login')
         async def login(client:Client) -> None:    
             return await self.login.login(client)
     
     def configure_menu(self):
         self.link_button("scholar","/scholar","scholar")
+        self.link_button("volume","/create_volume","library_books")
         username=app.storage.user.get('username', '?')
         ui.label(username)
 
@@ -231,6 +237,11 @@ class WebServer(InputWebserver):
             ui.label("timeout")
             self.timeout_slider = ui.slider(min=0.5, max=10).props('label-always')
             #.bind_value(self,"timeout")
+        await self.setup_content_div(show)
+        
+    async def create_volume(self):
+        def show():
+            self.volume_form=proceedings_form()
         await self.setup_content_div(show)
 
     async def scholar_search(self):
