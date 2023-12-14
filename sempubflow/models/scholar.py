@@ -17,6 +17,7 @@ class Scholar:
     orcid_id: Optional[str] = None
     image: Optional[str] = None
     affiliation: Optional[List[Affiliation]] = None
+    official_website: Optional[str] = None
 
 
     @property

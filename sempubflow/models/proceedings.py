@@ -1,6 +1,5 @@
-import datetime
 from dataclasses import dataclass, fields
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import List, Optional
 
@@ -66,6 +65,15 @@ class Event:
                 record[field.name] = getattr(self, field.name)
 
 
+    def get_full_location(self) -> str:
+        res = ""
+        if self.location:
+            res += self.location
+        if self.country:
+            res += f", {self.country}"
+        return res
+
+
 class Conference(Event):
     """
     academic Conference
@@ -87,7 +95,7 @@ class Proceedings:
     title: Optional[str] = None
     event: Optional[List[Event]] = None
     editor: Optional[List[Scholar]] = None
-
+    publication_date: Optional[datetime] = None
 
 
 class CustomDict(dict):
@@ -96,9 +104,9 @@ class CustomDict(dict):
         for field, value in data:
             if isinstance(value, EventType):
                 value = value.value
-            elif isinstance(value, datetime.datetime):
+            elif isinstance(value, datetime):
                 value = value.isoformat()
-            elif isinstance(value, datetime.date):
+            elif isinstance(value, date):
                 value = value.isoformat()
             res.append((field, value))
         super().__init__(x for x in res if x[1] is not None)

@@ -1,7 +1,9 @@
+import datetime
 import json
 from typing import Optional
 from urllib.parse import urlparse
 
+import dateutil.parser
 from nicegui import ui
 from nicegui.binding import bind_from, bind_to
 from nicegui.element import Element
@@ -13,6 +15,9 @@ from sempubflow.elements.scholar_form import ScholarForm, ScholarsListForm
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.models.proceedings import Conference, CustomDict, Event, EventType, Proceedings, Workshop
 from dataclasses import asdict
+
+from sempubflow.models.templates.ceurws import CeurVolumePage
+
 
 class ProceedingsForm(Element):
     """
@@ -26,6 +31,14 @@ class ProceedingsForm(Element):
             with ui.step('Proceedings'):
                 ui.label('Proceedings title')
                 ui.input(label="title").bind_value(self.proceeding, "title")
+                with ui.input('publication_date') as date:
+                    date.bind_value(self.proceeding, "publication_date",
+                            forward=lambda value: dateutil.parser.parse(value) if value else None,
+                            backward=lambda value: value.isoformat() if isinstance(value, datetime.datetime) else value)
+                    with date.add_slot('append'):
+                        ui.icon('edit_calendar').on('click', lambda: menu.open()).classes('cursor-pointer')
+                    with ui.menu() as menu:
+                        ui.date().bind_value(date)
                 with ui.stepper_navigation():
                     ui.button('Next', on_click=stepper.next)
             with ui.step('Event'):
@@ -51,7 +64,8 @@ class ProceedingsForm(Element):
     def add_event_form(self, clazz: type, container: ui.card):
          with container:
             ui.notify(f"Add {clazz.__name__}")
-            with ui.expansion(text=clazz.__name__, icon='event').classes('w-full') as expansion:
+            with ui.expansion(text=clazz.__name__, icon='event') as expansion:
+                expansion.classes('w-full')
                 ef = EventForm(clazz)
                 bind_from(expansion._props, 'label', ef.event, "title", backward=lambda x: f"{clazz.__name__}: {x}")
                 if self.proceeding.event is None:
@@ -122,7 +136,7 @@ class DisplayResults(Element):
             with ui.tab_panel(one):
                 html = ui.html().bind_content_from(self, "proceedings", backward=lambda value: self.convert_to_json_html(value))
             with ui.tab_panel(two):
-                ui.label('Second tab')
+                ui.html().bind_content_from(self, "proceedings", backward=lambda value: CeurVolumePage(value).render())
 
     @classmethod
     def convert_to_json_html(cls, proceedings: Proceedings) -> Optional[str]:
@@ -144,6 +158,7 @@ class DisplayResults(Element):
         )
 
         return content
+
 
 if __name__ in {"__main__", "__mp_main__"}:
     pf = ProceedingsForm()

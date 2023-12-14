@@ -49,7 +49,7 @@ class Wikidata:
               {filters}
               
             }}
-            LIMIT 10000
+            LIMIT 5000
         """
         lod = self.endpoint.queryAsListOfDicts(query)
         res = []

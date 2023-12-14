@@ -44,6 +44,7 @@ class ScholarForm(Element):
         ).bind_value(self.scholar, "wikidata_id")
         ui.input(label="ORCID id").bind_value(self.scholar, "orcid_id")
         ui.input(label="dblp author id").bind_value(self.scholar, "dblp_author_id")
+        ui.input(label="official website").bind_value(self.scholar,"official_website")
         self.affiliations_container = ui.card()
         if add_affiliation_callback is None:
             add_affiliation_callback = ScholarForm.add_affiliation_form
