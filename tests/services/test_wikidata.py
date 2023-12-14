@@ -2,7 +2,7 @@ import unittest
 
 from sempubflow.models.scholar import Scholar, ScholarSearchMask
 from sempubflow.services.wikidata import Wikidata
-from basetest import Basetest
+from ngwidgets.basetest import Basetest
 
 
 class TestDblp(Basetest):
@@ -22,6 +22,3 @@ class TestDblp(Basetest):
         self.assertIn("0000-0001-6324-7164", [scholar.orcid_id for scholar in scholars])
         self.assertIn("Q54303353", [scholar.wikidata_id for scholar in scholars])
 
-
-if __name__ == '__main__':
-    unittest.main()
