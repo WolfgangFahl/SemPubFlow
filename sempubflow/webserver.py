@@ -5,7 +5,7 @@ Created on 2023-06-19
 """
 from typing import List, Optional
 from fastapi.responses import RedirectResponse
-from nicegui import app,ui, Client
+from nicegui import app, run, ui, Client
 from ngwidgets.input_webserver import InputWebserver
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.homepage import Homepage
@@ -77,6 +77,8 @@ class ScholarSelector:
     def __init__(self):
         ui.add_head_html('<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">')
         self.selected_scholar: Optional[Scholar] = None
+        self.suggestion_list_wd: Optional[ui.element] = None
+        self.suggestion_list_dblp: Optional[ui.element] = None
         self.scholar_selection()
 
     @ui.refreshable
@@ -121,7 +123,7 @@ class ScholarSelector:
                         ui.label("dblp")
                         self.suggestion_list_dblp = ui.column().classes("rounded-md border-2")
 
-    def suggest_scholars(self):
+    async def suggest_scholars(self):
         """
         based on given input suggest potential scholars
 
@@ -130,12 +132,12 @@ class ScholarSelector:
         """
         search_mask = self._get_search_mask()
         if len(search_mask.name) > 4:  # quick fix to avoid queries on empty input fields
-            suggested_scholars_dblp = Dblp().get_scholar_suggestions(search_mask)
+            suggested_scholars_dblp = await run.io_bound(Dblp().get_scholar_suggestions, search_mask)
             self.update_suggestion_list(self.suggestion_list_dblp, suggested_scholars_dblp)
-            suggested_scholars_wd = Wikidata().get_scholar_suggestions(search_mask)
+            suggested_scholars_wd = await run.io_bound(Wikidata().get_scholar_suggestions, search_mask)
             self.update_suggestion_list(self.suggestion_list_wd, suggested_scholars_wd)
 
-    def update_suggestion_list(self, container: ui.column, suggestions: List[Scholar]):
+    def update_suggestion_list(self, container: ui.element, suggestions: List[Scholar]):
         container.clear()
         with container:
             if len(suggestions) <= 10:
@@ -155,7 +157,10 @@ class ScholarSelector:
         """
         self.selected_scholar = scholar
         self.scholar_selection.refresh()
-        self.suggestion_list.clear()
+        if self.suggestion_list_wd:
+            self.suggestion_list_wd.clear()
+        if self.suggestion_list_dblp:
+            self.suggestion_list_dblp.clear()
 
     def _get_search_mask(self) -> ScholarSearchMask:
         """
