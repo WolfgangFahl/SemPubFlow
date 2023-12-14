@@ -218,7 +218,7 @@ class WebServer(InputWebserver):
         async def scholar_search(client:Client):
             return await self.scholar_search()
         
-        @ui.page('/create_‚volume')
+        @ui.page('/create_volume')
         async def create_volume(client:Client):
             return await self.create_volume()
         
