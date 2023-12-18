@@ -46,7 +46,7 @@ classifiers=[
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License"
     ]
-dynamic = ["version", "description"]
+dynamic = ["version"]
 [tool.hatch.version]
 path = "sempubflow/__init__.py"
 
