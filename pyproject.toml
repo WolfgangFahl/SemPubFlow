@@ -3,6 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
+description = "Semantic Publishing Workflow support"
+keywords = ["nicegui","publishing","CEUR-WS","scholars"]
 name = "SemPubFlow"
 authors = [
   {name = "Wolfgang Fahl", email = "wf@bitplan.com"}

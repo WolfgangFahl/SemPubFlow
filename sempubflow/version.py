@@ -11,7 +11,7 @@ class Version(object):
     name = "SemanticPublishingFlow"
     version = sempubflow.__version__
     date = '2023-06-19'
-    updated = '2023-10-31'
+    updated = '2023-12-18'
     description = 'Semantic Publishing Workflow support'
     
     authors = 'Wolfgang Fahl'
