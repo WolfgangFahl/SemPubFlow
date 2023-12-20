@@ -13,6 +13,36 @@ from tqdm import tqdm
 
 from sempubflow.llm import LLM
 
+from dataclasses import dataclass
+
+@dataclass
+class VolumeSetInfo:
+    """
+    a set of volumes
+    """
+    set_index: int
+    from_volume: int
+    to_volume: int
+    accessible_count: int = 0
+    total_count: int = 0
+
+    def update(self, volume_number, is_accessible):
+        self.from_volume = min(self.from_volume, volume_number)
+        self.to_volume = max(self.to_volume, volume_number)
+        self.total_count += 1
+        if is_accessible:
+            self.accessible_count += 1
+
+    def to_dict(self):
+        return {
+            "#": self.set_index,
+            "From": self.from_volume,
+            "To": self.to_volume,
+            "Accessible": self.accessible_count,
+            "Total": self.total_count,
+            "Percentage": f"{(self.accessible_count / self.total_count) * 100:.2f}%" if self.total_count > 0 else "N/A"
+        }
+
 
 class HomepageChecker:
     """
@@ -37,8 +67,10 @@ class HomepageChecker:
         self.sample_size = (
             sample_size if sample_size is not None else len(volumes) // set_number
         )
-        self.results = []
         self.debug = debug
+        self.results = []  # Store detailed results
+        self.set_infos = []  # Store summary for each set
+
 
     def check_availability(self, url, timeout: float = 1.0):
         """
@@ -62,37 +94,82 @@ class HomepageChecker:
         Process the samples and check the availability of homepages.
 
         Args:
-            show_progress (bool, optional): Whether to show a progress bar. Defaults to False.
+            show_progress (bool): Whether to show a progress bar.
         """
         total_volumes = len(self.volumes)
         slot_size = total_volumes // self.set_number
 
-        # Initialize the progress bar with the total number of homepages to check
         if show_progress:
-            progress_bar = tqdm(
-                total=self.set_number * self.sample_size, desc="Checking homepages"
-            )
+            progress_bar = tqdm(total=self.set_number * self.sample_size, desc="Checking homepages")
 
         for set_index in range(self.set_number):
             start_index = set_index * slot_size
             middle_start = start_index + (slot_size - self.sample_size) // 2
             middle_end = middle_start + self.sample_size
-
             sample_volumes = self.volumes[middle_start:middle_end]
 
-            for volume in sample_volumes:
-                homepage = volume.get("homepage")
-                is_accessible = self.check_availability(homepage)
-                self.results.append(
-                    (set_index + 1, volume["number"], homepage, is_accessible)
-                )
+            set_info = VolumeSetInfo(set_index + 1, float('inf'), -1)
 
-                # Update the progress bar
+            for volume in sample_volumes:
+                volume_number = volume["number"]
+                homepage = volume["homepage"]
+                is_accessible = self.check_availability(homepage)
+
+                # Update set_info and store detailed result
+                set_info.update(volume_number, is_accessible)
+                self.results.append((set_index + 1, volume_number, homepage, is_accessible))
+
                 if show_progress:
                     progress_bar.update(1)
 
+            self.set_infos.append(set_info)
+
         if show_progress:
             progress_bar.close()
+
+    def prepare_summary_data(self):
+        """
+        Prepare the summary data.
+
+        Returns:
+            list: The prepared summary data.
+        """
+        summary_data = [set_info.to_dict() for set_info in self.set_infos]
+        return summary_data
+
+    def prepare_detailed_data(self):
+        """
+        Prepare the detailed result data.
+
+        Returns:
+            list: The prepared detailed data.
+        """
+        detailed_data = [
+            {
+                "#": index + 1, 
+                "Set": set_index, 
+                "Volume Number": volume_number, 
+                "Homepage": homepage, 
+                "Is Accessible": is_accessible
+            }
+            for index, (set_index, volume_number, homepage, is_accessible) in enumerate(self.results)
+        ]
+        return detailed_data
+
+    def create_formatted_table(self, data, table_format="grid"):
+        """
+        Create a formatted table.
+
+        Args:
+            data (list): The data for the table, which should be a list of dictionaries.
+            table_format (str): The format of the table.
+
+        Returns:
+            str: The formatted table in string format.
+        """
+        if not data:
+            return ""
+        return tabulate(data, headers="keys", tablefmt=table_format)
 
     def generate_summary_table(self):
         """
@@ -101,25 +178,8 @@ class HomepageChecker:
         Returns:
             str: The generated summary table in ASCII format.
         """
-        if self.debug:
-            headers = ["Set", "Volume Number", "Homepage", "Is Accessible"]
-            table_data = self.results
-        else:
-            headers = ["Set", "Accessible", "Total", "Percentage"]
-            set_results = {}
-            for set_index, _, _, is_accessible in self.results:
-                if set_index not in set_results:
-                    set_results[set_index] = [0, 0]  # [accessible count, total count]
-                set_results[set_index][1] += 1
-                if is_accessible:
-                    set_results[set_index][0] += 1
-
-            table_data = [
-                (set_index, *counts, f"{(counts[0] / counts[1]) * 100:.2f}%")
-                for set_index, counts in set_results.items()
-            ]
-
-        return tabulate(table_data, headers=headers, tablefmt="grid")
+        data = self.prepare_detailed_data() if self.debug else self.prepare_summary_data()
+        return self.create_formatted_table(data)
 
 
 class TestHomepages(Basetest):
@@ -169,7 +229,7 @@ class TestHomepages(Basetest):
         """
         if self.volumes is None:
             return
-        checker = HomepageChecker(self.volumes, set_number=3, sample_size=10)
+        checker = HomepageChecker(self.volumes, set_number=3, sample_size=5)
 
         checker.process_samples(show_progress=True)
 
