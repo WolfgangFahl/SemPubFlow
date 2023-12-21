@@ -22,11 +22,12 @@ class TestEvent(Basetest):
         limit=10
         count=0
         for vol in vol_list:
-            homepage=vol["homepage"]
-            if homepage:
-                homepage=homepage.strip()
+            homepage_url=vol["homepage"]
+            volume=vol["number"]
+            if homepage_url:
+                homepage=Homepage(volume,url=homepage_url)
                 count+=1
-                is_avail=Homepage.check_url(homepage)
+                is_avail=homepage.check_url()
                 print(f"{count}:{homepage} {is_avail}",flush=True)
                 if count>limit:
                     break
