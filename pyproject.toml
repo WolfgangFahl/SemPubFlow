@@ -28,7 +28,10 @@ dependencies = [
     'pylodstorage',
     'Pygments',
     # https://pypi.org/project/bcrypt/
-    'bcrypt'
+    'bcrypt',
+    # https://pypi.org/project/tldextract/
+    'tldextract>=5.1.1'
+    
 ]
 
 requires-python = ">=3.9"
