@@ -15,7 +15,7 @@ class TestOpenAi(Basetest):
     test https://github.com/openai/openai-python library
     """
     
-    def setUp(self, debug=False, profile=True):
+    def setUp(self, debug=True, profile=True):
         Basetest.setUp(self, debug=debug, profile=profile)
         self.llm=LLM()
         
@@ -23,6 +23,9 @@ class TestOpenAi(Basetest):
     def testOpenAI(self):    
         # list models
         models = openai.Model.list()
+        for model in models.data:
+            if self.debug:
+                print(model)
         pass
 
     
