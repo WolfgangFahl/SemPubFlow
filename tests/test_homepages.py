@@ -5,6 +5,7 @@ Created on 2023-12-20
 """
 import json
 import os
+import yaml
 
 import requests
 from ngwidgets.basetest import Basetest
@@ -45,20 +46,16 @@ class VolumeSetInfo:
 
 
 class HomepageChecker:
-    """
-    test the availability of homepages for the given volumes
-    """
-
-    def __init__(self, volumes, set_number=1, sample_size=None, debug: bool = False):
+    def __init__(self, volumes, set_number=1, sample_size=None, debug: bool = False, cache_file=None):
         """
-        Initialize the HomepageChecker.
+        Initialize the HomepageChecker with caching mechanism.
 
         Args:
             volumes (list): A list of volume dictionaries.
-            set_number (int, optional): The number of sets to divide the volumes into. Defaults to 1.
-            sample_size (int, optional): The size of each sample to check. If None, checks all volumes in a set. Defaults to None.
-            debug (bool, optional): If True, shows detailed debug information. Defaults to False.
-
+            set_number (int): The number of sets to divide the volumes into.
+            sample_size (int): The size of each sample to check.
+            debug (bool): If True, shows detailed debug information.
+            cache_file (str): The filename for storing cache data.
         """
         self.volumes = [
             v for v in volumes if v.get("homepage")
@@ -70,8 +67,30 @@ class HomepageChecker:
         self.debug = debug
         self.results = []  # Store detailed results
         self.set_infos = []  # Store summary for each set
+        if cache_file is None:
+            cache_file=os.path.expanduser("~/.ceurws/volume_homepages.yaml")
+        self.cache_file = cache_file
+        self.cache = self.load_cache()
 
+    def load_cache(self):
+        """
+        Load the cache data from a file.
 
+        Returns:
+            dict: The loaded cache data.
+        """
+        if os.path.exists(self.cache_file):
+            with open(self.cache_file, 'r') as file:
+                return yaml.safe_load(file)
+        return {}
+    
+    def save_cache(self):
+        """
+        Save the cache data to a file.
+        """
+        with open(self.cache_file, 'w') as file:
+            yaml.dump(self.cache, file)
+    
     def check_availability(self, url, timeout: float = 1.0):
         """
         Check if the given URL is accessible.
@@ -83,11 +102,18 @@ class HomepageChecker:
         Returns:
             bool: True if the URL is accessible, False otherwise.
         """
+        if url in self.cache:
+            return self.cache[url]
+
         try:
             response = requests.head(url, allow_redirects=True, timeout=timeout)
-            return response.status_code == 200
+            is_accessible = response.status_code == 200
         except requests.RequestException:
-            return False
+            is_accessible = False
+
+        # Update cache
+        self.cache[url] = is_accessible
+        return is_accessible
 
     def process_samples(self, show_progress=False):
         """
@@ -126,6 +152,8 @@ class HomepageChecker:
 
         if show_progress:
             progress_bar.close()
+        # Save cache after processing
+        self.save_cache()
 
     def prepare_summary_data(self):
         """
@@ -229,7 +257,7 @@ class TestHomepages(Basetest):
         """
         if self.volumes is None:
             return
-        checker = HomepageChecker(self.volumes, set_number=3, sample_size=5)
+        checker = HomepageChecker(self.volumes, set_number=1200, sample_size=3)
 
         checker.process_samples(show_progress=True)
 
