@@ -37,7 +37,7 @@ class TestEvent(Basetest):
         test getting the text from a homepage
         """
         url="https://escape33-ath.gr/"
-        homepage=Homepage(url)
+        homepage=Homepage(volume=0,url=url)
         text=homepage.get_text()
         chars=len(text)
         lines=text.count('\n')
