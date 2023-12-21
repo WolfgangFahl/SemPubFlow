@@ -9,7 +9,7 @@ from datetime import datetime
 from ngwidgets.basetest import Basetest
 from sempubflow.homepage import VolumeSetInfo, Homepage,Homepages,HomepageChecker
 from sempubflow.llm import LLM
-
+from tqdm import tqdm
 
 class TestHomepages(Basetest):
     """
@@ -32,6 +32,31 @@ class TestHomepages(Basetest):
         with open(volumes_path, "r") as file:
             volumes_data = json.load(file)
         return volumes_data
+    
+    def test_update_content_len(self):
+        """
+        Update the content length of each homepage.
+        """
+        # Initialize HomepageChecker with the volumes
+        if self.volumes is None:
+            print("No volumes found.")
+            return
+
+        checker = HomepageChecker(self.volumes)
+
+        # Load existing homepages
+        checker.load_homepages_cache()
+
+        # Update content length for each homepage with a progress bar
+        for homepage in tqdm(checker.homepages.homepages, desc="Updating content length"):
+            homepage.check_url()
+
+        # Save updated homepages back to cache
+        checker.save_homepages_cache()
+
+        if self.debug:
+            print(f"Updated content length for {len(checker.homepages.homepages)} homepages.")
+
          
     def test_home_pages_count(self):
         """

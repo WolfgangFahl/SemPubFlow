@@ -30,7 +30,9 @@ dependencies = [
     # https://pypi.org/project/bcrypt/
     'bcrypt',
     # https://pypi.org/project/tldextract/
-    'tldextract>=5.1.1'
+    'tldextract>=5.1.1',
+    # https://pypi.org/project/requests/
+    'requests>=2.31.0'
     
 ]
 

@@ -6,7 +6,7 @@ Created on 2023-06-19
 import os
 import urllib.request
 from dataclasses import dataclass,field
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 from bs4 import BeautifulSoup
 from ngwidgets.yamlable import YamlAble
@@ -21,6 +21,7 @@ class Homepage(YamlAble["Homepage"]):
     volume: int
     url: str = None
     available: bool = False
+    content_len: Optional[int] = None
     availability_check: datetime = datetime.now()
     
     def __post_init__(self):
@@ -28,28 +29,36 @@ class Homepage(YamlAble["Homepage"]):
         if self.url:
             self.url = self.url.strip()
 
-    @classmethod
     def check_url(self, timeout: float = 0.5) -> bool:
         """
-
-        check the url
+        Check the URL.
 
         Args:
-            timeout(float): the timeout in seconds
-            url(str): the url to check
+            timeout (float): The timeout in seconds.
 
         Returns:
-            bool: True if the url is reachable
+            bool: True if the URL is reachable, False otherwise.
         """
         # Skip if the URL is empty
         if not self.url:
             return False
+
         try:
-            code = urllib.request.urlopen(self.url, timeout=timeout).getcode()
+            response = urllib.request.urlopen(self.url, timeout=timeout)
+            self.available = response.getcode() == 200
+
+            # Get content length if available
+            if self.available:
+                self.content_len = response.headers.get('Content-Length')
+                if self.content_len is not None:
+                    self.content_len = int(self.content_len)
+
         except Exception as _ex:
-            return False
-        self.available = code == 200
+            self.available = False
+            self.content_len = None
+
         return self.available
+
 
     def read(self) -> str:
         """
