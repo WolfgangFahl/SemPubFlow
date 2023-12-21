@@ -59,7 +59,8 @@ class HomePageSelector:
         react on changing the url homepage value
         """
         url = event.sender.value
-        self.valid = Homepage.check_url(url, timeout=self.timeout)
+        homepage=Homepage(volume=0,url=url)
+        self.valid = homepage.check_url(timeout=self.timeout)
         if self.valid:
             self.homepage_frame.content = f"""<iframe width="100%" height="100%" src="{url}"></iframe>
 """
