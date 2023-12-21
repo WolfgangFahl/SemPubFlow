@@ -29,8 +29,8 @@ class LLM:
             model(str): the model to use
         """
         self.model=model
-        self.token_size_limit = self.MODEL_TOKEN_SIZES.get(model, 4096)  # Default to 4096 if model not found
-        self.char_size_limit = self.token_size_limit * self.AVERAGE_TOKEN_CHAR_LEN
+        self.token_size_limit = LLM.MODEL_SIZE_LIMITS.get(model, 4096)  # Default to 4096 if model not found
+        self.char_size_limit = self.token_size_limit * LLM.AVERAGE_TOKEN_CHAR_LEN
     
         if api_key:
             # If an API key is provided during object creation, set it.
