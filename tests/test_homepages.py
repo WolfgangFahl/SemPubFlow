@@ -5,8 +5,10 @@ Created on 2023-12-20
 """
 import json
 import os
+import sys
 import random
 from tqdm import tqdm
+from datetime import datetime
 from ngwidgets.basetest import Basetest
 from sempubflow.homepage import (
     HomepageChecker,
@@ -14,6 +16,7 @@ from sempubflow.homepage import (
 )
 from sempubflow.llm import LLM
 from sempubflow.plot import Histogram
+from sempubflow.event import Event, Events
 
 
 class TestHomepages(Basetest):
@@ -212,6 +215,23 @@ class TestHomepages(Basetest):
         if modified > 0:
             checker.save_homepages_cache()
             
+    def get_random_homepages(self,sample_size:10,max_len=20000)->list:
+        # Filter the homepages based on the text length criteria
+        eligible_homepages = [
+            hp for hp in self.checker.homepages.homepages
+            if hp.text and len(hp.text) < max_len
+        ]
+
+        # Select 10 random homepages from those that are eligible
+        selected_homepages = random.sample(eligible_homepages, min(sample_size, len(eligible_homepages)))
+
+        if self.debug:
+            # Print the selected homepages
+            for hp in selected_homepages:
+                print(f"Volume: {hp.volume}, URL: {hp.url}, Text Length: {len(hp.text)}")
+        volume_numbers=[hp.volume for hp in selected_homepages]
+        return volume_numbers
+           
     def test_random_homepages_with_max_length(self):
         """
         Select and print 10 random homepages with a text length of less than 20000 characters.
@@ -240,25 +260,14 @@ class TestHomepages(Basetest):
         for hp in selected_homepages:
             print(f"  {hp.volume},")
         print("]")
-
+        
     def test_random_set(self):
         """
         test a random set of volumes
         """
         if not self.checker:
             return
-        vol_numbers=[
-          2939,
-          1714,
-          2757,
-          687,
-          2679,
-          461,
-          3157,
-          1722,
-          2405,
-          3181,
-        ]
+        vol_numbers=self.get_random_homepages(sample_size=60, max_len=10000)
         llm=LLM()   
         prompt_prefix="""
         provide the event signature elements:
@@ -278,29 +287,69 @@ use lowercase/underscore for the element names and leave out elements hat are no
 Use ISO date format for dates. 
 Use start_date and end_date as field names. 
 Give the year as a 4 digit integer.
-Give the location as country/region and city using iso codes. 
+Give the location as country/region and city
+Give the country using a 2 digit ISO 3166-1 alpha-2 code
+Give the region using ISO_3166-2 code
+Give the city with it's english label 
 Answer with the raw yaml only with no further comments outside the yaml. If you must comment use a comments field.
-do not add any fields beyond the given list above
+Do not add any fields beyond the given list above.
+Stick to the requested fields only, and never ever add any extra information.
 
-a valid answer e.g. would look like
-event:
-  acronym: "AVICH 2022"
-  event_type: "Workshop"
-  year: 2022
-  start_date: "2022-06-06"
-  end_date: "2022-06-10"
-  location:
-    country: "IT"  # Italy
-    region: "62"   # Lazio
-    city: "Frascati"
-  title: "Workshop on Advanced Visual Interfaces and Interactions in Cultural Heritage"
-  subject: "Advanced Visual Interfaces and Interactions in Cultural Heritage"
+valid answers e.g. would look like
+# AVICH 2022
+acronym: "AVICH 2022"
+event_type: "Workshop"
+year: 2022
+start_date: "2022-06-06"
+end_date: "2022-06-10"
+country: "IT"  # Italy
+region: "IT-62"   # Lazio
+city: "Frascati"
+title: "Workshop on Advanced Visual Interfaces and Interactions in Cultural Heritage"
+subject: "Advanced Visual Interfaces and Interactions in Cultural Heritage"
+
+# BMAW 2024
+acronym: "BMAW 2014"
+frequency: "Annual"
+event_reach: "International"
+event_type: "Workshop"
+year: 2014
+country: "NL"  # Netherlands
+region: "NL-NH" # Noord-Holland
+city: "Amsterdam"
+title: "Bayesian Modeling Applications Workshop"
+subject: "Bayesian Modeling Applications"
+  
+# LM-KBC 2023  
+acronym: "LM-KBC 2023"
+event_type: "Challenge"
+ordinal: 2
+title: "Language Models for Knowledge Base Construction"
+subject: "Knowledge Base Construction"
+year: 2023
+start_date: "2023-11-01"
+end_date: "2023-11-01"
+country: "GR"  # Greece
+region: "GR-I"  # Attica
+city: "Athens"  
 
 Extract as instructed from the following homepage text:
 """
-        for vol_number in vol_numbers:
-            hp=self.checker.homepages_by_volume[vol_number]
-            prompt_text=f"{prompt_prefix}\n{hp.text}"
-            yaml_str=llm.ask(prompt_text)
-            print (yaml_str)
+        events=Events()
+        log_path=os.path.join(self.ceurws_path,"llm")
+        os.makedirs(log_path, exist_ok=True)  # Create llm directory if it doesn't exist.
+        log_file = f"events-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.yaml"
+        
+        for vol_number in tqdm(vol_numbers):
+            try:
+                hp=self.checker.homepages_by_volume[vol_number]
+                prompt_text=f"{prompt_prefix}\n{hp.text}"
+                yaml_str=llm.ask(prompt_text,temperature=0.0)
+                print (f"{vol_number}:\n{yaml_str}")
+                event=Event.from_yaml(yaml_str)
+                event.volume=vol_number
+                events.events.append(event)
+            except Exception as ex:
+                print(str(ex),file=sys.stderr)
+        events.save_to_file(os.path.join(log_path, log_file))
             

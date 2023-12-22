@@ -32,8 +32,9 @@ dependencies = [
     # https://pypi.org/project/tldextract/
     'tldextract>=5.1.1',
     # https://pypi.org/project/requests/
-    'requests>=2.31.0'
-    
+    'requests>=2.31.0',
+    # https://pypi.org/project/scikit-learn/
+    'scikit-learn>=3.1.0'
 ]
 
 requires-python = ">=3.9"
