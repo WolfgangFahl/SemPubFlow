@@ -5,6 +5,7 @@ Created on 2023-12-20
 """
 import json
 import os
+import random
 from tqdm import tqdm
 from ngwidgets.basetest import Basetest
 from sempubflow.homepage import (
@@ -210,3 +211,96 @@ class TestHomepages(Basetest):
             print(f"{modified} homepage texts")
         if modified > 0:
             checker.save_homepages_cache()
+            
+    def test_random_homepages_with_max_length(self):
+        """
+        Select and print 10 random homepages with a text length of less than 20000 characters.
+        """
+        # Ensure there is a homepage checker and volumes are loaded
+        if not self.checker:
+            return
+        
+        max_len=20000
+        sample_size = 10
+
+        # Filter the homepages based on the text length criteria
+        eligible_homepages = [
+            hp for hp in self.checker.homepages.homepages
+            if hp.text and len(hp.text) < max_len
+        ]
+
+        # Select 10 random homepages from those that are eligible
+        selected_homepages = random.sample(eligible_homepages, min(sample_size, len(eligible_homepages)))
+
+        # Print or process the selected homepages
+        for hp in selected_homepages:
+            print(f"Volume: {hp.volume}, URL: {hp.url}, Text Length: {len(hp.text)}")
+
+        print("vol_numbers=[")
+        for hp in selected_homepages:
+            print(f"  {hp.volume},")
+        print("]")
+
+    def test_random_set(self):
+        """
+        test a random set of volumes
+        """
+        if not self.checker:
+            return
+        vol_numbers=[
+          2939,
+          1714,
+          2757,
+          687,
+          2679,
+          461,
+          3157,
+          1722,
+          2405,
+          3181,
+        ]
+        llm=LLM()   
+        prompt_prefix="""
+        provide the event signature elements:
+- Acronym: The short name of the conference, often in uppercase.
+- Frequency: How often the event occurs, like annual or biennial.
+- Event reach: The geographical or demographic reach of the event, like International or European.
+- Event type: The format of the event, such as Conference, Workshop, or Symposium.
+- Year: The year in which the event takes place.
+- Ordinal: The instance number of the event, like 18th or 1st.
+- Date: The start and end date or date range of the event.
+- Location: The country, region, and city of the event, and sometimes specific venue details.
+- Title: The full title of the event, often indicating the scope and subject.
+- Subject: The main topic or focus of the event.
+
+in YAML Format.
+use lowercase/underscore for the element names and leave out elements hat are not found. 
+Use ISO date format for dates. 
+Use start_date and end_date as field names. 
+Give the year as a 4 digit integer.
+Give the location as country/region and city using iso codes. 
+Answer with the raw yaml only with no further comments outside the yaml. If you must comment use a comments field.
+do not add any fields beyond the given list above
+
+a valid answer e.g. would look like
+event:
+  acronym: "AVICH 2022"
+  event_type: "Workshop"
+  year: 2022
+  start_date: "2022-06-06"
+  end_date: "2022-06-10"
+  location:
+    country: "IT"  # Italy
+    region: "62"   # Lazio
+    city: "Frascati"
+  title: "Workshop on Advanced Visual Interfaces and Interactions in Cultural Heritage"
+  subject: "Advanced Visual Interfaces and Interactions in Cultural Heritage"
+
+Extract as instructed from the following homepage text:
+"""
+        for vol_number in vol_numbers:
+            hp=self.checker.homepages_by_volume[vol_number]
+            prompt_text=f"{prompt_prefix}\n{hp.text}"
+            yaml_str=llm.ask(prompt_text)
+            print (yaml_str)
+            
