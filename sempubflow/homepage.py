@@ -31,7 +31,6 @@ class Homepage(YamlAble["Homepage"]):
         self.read_timeout=3.0
         if self.url:
             self.url = self.url.strip()
-            
 
     def check_url(self, timeout: float = 0.5) -> bool:
         """

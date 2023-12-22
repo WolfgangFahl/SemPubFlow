@@ -4,7 +4,6 @@ Created on 2023-06-21
 @author: wf
 '''
 from ngwidgets.basetest import Basetest
-from sempubflow.homepage import Homepage
 from sempubflow.llm import LLM
 from sempubflow.event_info import EventInfo
 import unittest
@@ -47,9 +46,10 @@ class TestOpenAi(Basetest):
         """
         event_info=EventInfo(self.llm)
         url="https://escape33-ath.gr/"
-        result=event_info.get_meta_data(url)
-        #url="https://www.wp-cape.eu/index.php/resources/escape-series/"
-        #for all parts of the series 
-        debug=True
-        if debug:
-            print(result)
+        for model in ["gpt-3.5-turbo","gpt-4"]:
+            result=event_info.get_meta_data(url,model=model)
+            #url="https://www.wp-cape.eu/index.php/resources/escape-series/"
+            #for all parts of the series 
+            debug=True
+            if debug:
+                print(result)

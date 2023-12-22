@@ -26,11 +26,11 @@ class EventInfo:
             result="❌"
         return result
         
-    def get_meta_data(self,url):
+    def get_meta_data(self,url,model:str):
         """
         get the metadata for the given url
         """
-        self.homepage=Homepage(url)
+        self.homepage=Homepage(volume=0,url=url)
         self.text=self.homepage.get_text()
         result_dict={}
         if self.llm.available():
@@ -47,7 +47,7 @@ class EventInfo:
       "start_date": "1998-10-19",
       "end_date": "1998-10-20",
       }}  described by the following text:{self.text}"""
-            result_str=self.llm.ask(prompt)
+            result_str=self.llm.ask(prompt,model=model)
             result_dict=json.loads(result_str)
             return result_dict
         
