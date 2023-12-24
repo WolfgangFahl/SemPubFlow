@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>nicegui_widgets</project>
+		<project>pyCEURmake</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

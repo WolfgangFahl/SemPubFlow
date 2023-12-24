@@ -239,7 +239,7 @@ class WebServer(InputWebserver):
             return await self.home()
         
         @ui.page("/admin")
-        async def admin(_client: Client):
+        async def admin(client: Client):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.admin()
@@ -251,7 +251,7 @@ class WebServer(InputWebserver):
             return await self.settings()
 
         @ui.page("/user/{username}")
-        async def show_user(_client:Client,username:str):
+        async def show_user(client:Client,username:str):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.show_user(username)
@@ -287,8 +287,11 @@ class WebServer(InputWebserver):
         await self.setup_content_div(show)
         
     async def admin(self):
+        """
+        admin interface
+        """
         def show():
-            admin=Admin()
+            self.admin_view=Admin(self)
         await self.setup_content_div(show)
         
     async def settings(self):
