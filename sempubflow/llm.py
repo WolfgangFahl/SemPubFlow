@@ -20,29 +20,33 @@ class Prompt(YamlAble["Prompt"]):
     """
     a single prompt with response
     """
+
     prompt: str
     response: str
     tokens: int
     temperature: float
     timestamp: datetime
     duration: float
-    model: Optional[str]=None
-    model_details: Optional[str]=None
-    
-    def append_to_file(self,filepath: str):
+    model: Optional[str] = None
+    model_details: Optional[str] = None
+
+    def append_to_file(self, filepath: str):
         # Open the file in append mode
-        with open(filepath, 'a') as file:
+        with open(filepath, "a") as file:
             # Dump the new prompt as YAML directly into the file
-            yaml_str=self.to_yaml()
+            yaml_str = self.to_yaml()
             # Ensure the new prompt starts on a new line
             file.write(f"\n{yaml_str}")
-    
+
+
 @dataclass
 class Prompts(YamlAble["Prompts"]):
     """
     keep track of a series of prompts
     """
+
     prompts: List[Prompt] = field(default_factory=list)
+
 
 class LLM:
     """
@@ -58,7 +62,11 @@ class LLM:
     AVERAGE_TOKEN_CHAR_LEN = 4  # Adjust this value based on the model
 
     def __init__(
-        self, api_key: str = None, model="gpt-3.5-turbo", force_key: bool = False, prompts_filepath:str=None
+        self,
+        api_key: str = None,
+        model="gpt-3.5-turbo",
+        force_key: bool = False,
+        prompts_filepath: str = None,
     ):
         """
         constructor
@@ -100,7 +108,9 @@ class LLM:
         if prompts_filepath is None:
             date_str = datetime.now().strftime("%Y-%m")  # Formats the date as YYYY-MM
             default_filename = f"prompts_{date_str}.yaml"  # Constructs the file name
-            openai_dir = Path.home() / ".openai"  # Constructs the path to the .openai directory
+            openai_dir = (
+                Path.home() / ".openai"
+            )  # Constructs the path to the .openai directory
 
             # Check if .openai directory exists, create if it doesn't
             if not openai_dir.exists():
@@ -108,15 +118,15 @@ class LLM:
 
             prompts_filepath = openai_dir / default_filename  # Constructs the full path
 
-        self.prompts_filepath=prompts_filepath
-        
+        self.prompts_filepath = prompts_filepath
+
         # Load or initialize the prompts file
         if prompts_filepath.is_file():
             self.prompts = Prompts.load_from_file(str(prompts_filepath))
         else:
             # If the file doesn't exist, create an empty Prompts object
             # You might want to handle directory creation here if .openai directory might not exist
-            self.prompts = Prompts()     
+            self.prompts = Prompts()
 
     def available(self):
         """
@@ -127,10 +137,10 @@ class LLM:
         """
         return openai.api_key is not None
 
-    def ask(self, prompt_text: str, model:str=None, temperature: float = 0.7) -> str:
+    def ask(self, prompt_text: str, model: str = None, temperature: float = 0.7) -> str:
         """
         ask a prompt
-    
+
         Args:
             prompt_text(str): The text of the prompt to send to the model.
             model(str): the model to use - if None self.model is used
@@ -143,24 +153,24 @@ class LLM:
                 f"Prompt exceeds size limit of {self.char_size_limit} characters."
             )
         if model is None:
-            model=self.model
-    
+            model = self.model
+
         # Start timing the response
         start_time = datetime.now()
-    
+
         # Interact with the API
         chat_completion = openai.ChatCompletion.create(
             model=model,
             messages=[{"role": "user", "content": prompt_text}],
-            temperature=temperature  # Include the temperature parameter here
+            temperature=temperature,  # Include the temperature parameter here
         )
         result = chat_completion.choices[0].message.content
         total_tokens = chat_completion.usage.total_tokens
-        model_details = chat_completion.get('model')
-    
+        model_details = chat_completion.get("model")
+
         # Calculate duration
         duration = (datetime.now() - start_time).total_seconds()
-    
+
         # Create a new Prompt instance and append it to the prompts list
         new_prompt = Prompt(
             prompt=prompt_text,
@@ -170,18 +180,16 @@ class LLM:
             temperature=temperature,
             tokens=total_tokens,
             timestamp=datetime.now(),
-            duration=duration
+            duration=duration,
         )
         start_save_time = time.time()
 
         # Save the prompts to a file
         self.prompts.prompts.append(new_prompt)
         new_prompt.append_to_file(self.prompts_filepath)
-    
+
         # After saving
         end_save_time = time.time()
         save_duration = end_save_time - start_save_time
         print(f"Time taken to append to prompts: {save_duration} seconds")
         return result
-
-

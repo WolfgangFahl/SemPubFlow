@@ -43,11 +43,22 @@ hist.save_plot('histogram', format='png')
 """
 import matplotlib.pyplot as plt
 
+
 class Histogram:
     """
     Histogram plot utility
     """
-    def __init__(self, data, bins=50, title='', xlabel='', ylabel='', log_scale_x=False, log_scale_y=False):
+
+    def __init__(
+        self,
+        data,
+        bins=50,
+        title="",
+        xlabel="",
+        ylabel="",
+        log_scale_x=False,
+        log_scale_y=False,
+    ):
         """
         Initialize the HistogramPlotter with given data, plot parameters, and log scale options.
 
@@ -70,8 +81,8 @@ class Histogram:
         self.ylabel = ylabel
         self.log_scale_x = log_scale_x
         self.log_scale_y = log_scale_y
-        self.plt=None
-    
+        self.plt = None
+
     def create_histogram(self):
         """
         Plot the histogram based on the provided data and parameters, with optional logarithmic scales.
@@ -80,16 +91,16 @@ class Histogram:
         plt.title(self.title)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
-        
-        if self.log_scale_x:
-            plt.xscale('log')
-        if self.log_scale_y:
-            plt.yscale('log')
-        
-        plt.grid(True)
-        self.plt=plt
 
-    def save_plot(self, filepath_prefix, file_format='png'):
+        if self.log_scale_x:
+            plt.xscale("log")
+        if self.log_scale_y:
+            plt.yscale("log")
+
+        plt.grid(True)
+        self.plt = plt
+
+    def save_plot(self, filepath_prefix, file_format="png"):
         """
         Save the histogram plot to a file.
 

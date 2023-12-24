@@ -59,7 +59,7 @@ class HomePageSelector:
         react on changing the url homepage value
         """
         url = event.sender.value
-        homepage=Homepage(volume=0,url=url)
+        homepage = Homepage(volume=0, url=url)
         self.valid = homepage.check_url(timeout=self.timeout)
         if self.valid:
             self.homepage_frame.content = f"""<iframe width="100%" height="100%" src="{url}"></iframe>
@@ -243,6 +243,10 @@ class WebServer(InputWebserver):
                 return RedirectResponse("/login")
             return await self.settings()
 
+        @ui.page("/user/{username}")
+        async def show_user(client:Client,username:str):
+            return await self.show_user(username)
+        
         @ui.page("/scholar")
         async def scholar_search(client: Client):
             return await self.scholar_search()
@@ -256,11 +260,21 @@ class WebServer(InputWebserver):
             return await self.login.login(client)
 
     def configure_menu(self):
-        self.link_button("scholar", "/scholar", "scholar")
+        """
+        configure the menu
+        """
+        self.link_button("scholar", "/scholar", "school")
         self.link_button("volume", "/create_volume", "library_books")
         username = app.storage.user.get("username", "?")
-        ui.label(username)
+        self.link_button(username, f"/user/{username}", "person")
 
+    async def show_user(self,username):
+        """
+        """
+        def show():
+            ui.label(username)
+        await self.setup_content_div(show)
+        
     async def settings(self):
         def show():
             ui.label("timeout")

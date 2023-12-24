@@ -3,8 +3,8 @@ Created on 2023-07-14
 
 @author: wf
 """
-import os
 import json
+import os
 from typing import Optional
 
 from oauthlib.oauth2 import BackendApplicationClient
@@ -36,19 +36,21 @@ class ORCIDAuth:
             client_secret (str, optional): The client secret for the ORCID API. Defaults to None.
             sandbox (bool, optional): Whether to use the sandbox base url or the production base url. Defaults to True.
         """
-        self.config_path = os.path.join(os.path.expanduser('~'), '.orcid', 'sempubflow.json')
+        self.config_path = os.path.join(
+            os.path.expanduser("~"), ".orcid", "sempubflow.json"
+        )
         if not client_id or not client_secret:
             self.load_config()
         else:
             self.client_id = client_id
             self.client_secret = client_secret
-        self.base_url = 'https://sandbox.orcid.org' if sandbox else 'https://orcid.org'
-        self.token_url = f'{self.base_url}/oauth/token'
+        self.base_url = "https://sandbox.orcid.org" if sandbox else "https://orcid.org"
+        self.token_url = f"{self.base_url}/oauth/token"
         self.client = BackendApplicationClient(client_id=self.client_id)
         self.oauth: Optional[OAuth2Session] = None
         self.token = None
-        
-    def open(self):    
+
+    def open(self):
         """
         open a session
         """
@@ -59,10 +61,10 @@ class ORCIDAuth:
         """Loads the client id and secret from a local JSON configuration file."""
 
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, "r") as f:
                 config = json.load(f)
-            self.client_id = config.get('client_id')
-            self.client_secret = config.get('client_secret')
+            self.client_id = config.get("client_id")
+            self.client_secret = config.get("client_secret")
         except FileNotFoundError:
             print(f"Config file not found at {self.config_path}")
             exit(1)
@@ -75,8 +77,8 @@ class ORCIDAuth:
         """
 
         token = self.oauth.fetch_token(
-                token_url=self.token_url,
-                auth=HTTPBasicAuth(self.client_id, self.client_secret)
+            token_url=self.token_url,
+            auth=HTTPBasicAuth(self.client_id, self.client_secret),
         )
         return token
 
@@ -90,7 +92,9 @@ class ORCIDAuth:
             tuple: The authorization URL and the state.
         """
 
-        authorization_url, state = self.oauth.authorization_url(self.token_url, redirect_uri=redirect_uri)
+        authorization_url, state = self.oauth.authorization_url(
+            self.token_url, redirect_uri=redirect_uri
+        )
         return authorization_url, state
 
     def fetch_token(self, authorization_response, redirect_uri):
@@ -104,9 +108,11 @@ class ORCIDAuth:
             dict: The access token.
         """
 
-        token = self.oauth.fetch_token(self.token_url,
-                                       authorization_response=authorization_response,
-                                       redirect_uri=redirect_uri)
+        token = self.oauth.fetch_token(
+            self.token_url,
+            authorization_response=authorization_response,
+            redirect_uri=redirect_uri,
+        )
         return token
 
     def get(self, url, **kwargs):

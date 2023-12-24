@@ -6,29 +6,32 @@ Created on 2023-06-19
 import os
 import sys
 import urllib.request
-from dataclasses import dataclass,field
-from typing import Dict, List, Optional
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Dict, List, Optional
+
 from bs4 import BeautifulSoup
 from ngwidgets.yamlable import YamlAble
-from tqdm import tqdm
 from tabulate import tabulate
+from tqdm import tqdm
+
 
 @dataclass
 class Homepage(YamlAble["Homepage"]):
     """
     a CEUR-WS event homepage
     """
+
     volume: int
     url: Optional[str] = None
     text: Optional[str] = None
     available: bool = False
     content_len: Optional[int] = None
     availability_check: datetime = datetime.now()
-    
+
     def __post_init__(self):
         # Strip leading and trailing whitespace from the URL
-        self.read_timeout=3.0
+        self.read_timeout = 3.0
         if self.url:
             self.url = self.url.strip()
 
@@ -52,7 +55,7 @@ class Homepage(YamlAble["Homepage"]):
 
             # Get content length if available
             if self.available:
-                self.content_len = response.headers.get('Content-Length')
+                self.content_len = response.headers.get("Content-Length")
                 if self.content_len is not None:
                     self.content_len = int(self.content_len)
 
@@ -61,7 +64,6 @@ class Homepage(YamlAble["Homepage"]):
             self.content_len = None
 
         return self.available
-
 
     def read(self) -> str:
         """
@@ -79,15 +81,15 @@ class Homepage(YamlAble["Homepage"]):
         try:
             self.read()
             soup = BeautifulSoup(self.html, features="html.parser")
-    
+
             # kill all script and style elements
             for script in soup(["script", "style"]):
                 script.extract()  # rip it out
         except Exception as ex:
             # shall we log the exception here?
-            print(str(ex),file=sys.stderr)
+            print(str(ex), file=sys.stderr)
             pass
-        
+
         if soup and soup.body:
             # get text
             text = soup.body.get_text()
@@ -136,6 +138,7 @@ class VolumeSetInfo:
             else "N/A",
         }
 
+
 class PercentageTable:
     """
     A class for creating a table that displays values and their corresponding percentages of a total.
@@ -175,14 +178,17 @@ class PercentageTable:
     def generate_table(self, tablefmt="grid") -> str:
         """
         Generates a string representation of the table using the tabulate library.
-        
+
         Returns:
             str: The string representation of the table with headers and formatted rows.
         """
         if not self.rows:
             return ""
-        tabulate_markup=tabulate(self.rows, headers='keys', tablefmt=tablefmt, floatfmt=f".{self.digits}f")
+        tabulate_markup = tabulate(
+            self.rows, headers="keys", tablefmt=tablefmt, floatfmt=f".{self.digits}f"
+        )
         return tabulate_markup
+
 
 class HomepageChecker:
     """Class to check the homepage availability and analyze TLDs."""
@@ -219,7 +225,7 @@ class HomepageChecker:
     def save_homepages_cache(self):
         """Save the homepages cache data to a file."""
         self.homepages.save_to_file(self.cache_file)
-        
+
     def check_availability(self, url: str, volume_number: int) -> bool:
         """
         Check the availability of a homepage URL, using the cache if available.
@@ -233,7 +239,12 @@ class HomepageChecker:
         """
         if volume_number not in self.homepages_by_volume:
             # Check availability and create a new Homepage instance
-            new_homepage = Homepage(volume=volume_number, url=url, available=False, availability_check=datetime.now())
+            new_homepage = Homepage(
+                volume=volume_number,
+                url=url,
+                available=False,
+                availability_check=datetime.now(),
+            )
             new_homepage.check_url()
             # Append the new homepage to the homepages list and update the dictionary
             self.homepages.homepages.append(new_homepage)
@@ -243,8 +254,13 @@ class HomepageChecker:
             # Use existing Homepage availability
             return self.homepages_by_volume[volume_number].available
 
-
-    def process_samples(self,set_number: int = 1,sample_size: int = None, show_progress=False, with_save: bool=False):
+    def process_samples(
+        self,
+        set_number: int = 1,
+        sample_size: int = None,
+        show_progress=False,
+        with_save: bool = False,
+    ):
         """
         Process the samples and check the availability of homepages.
 
@@ -254,10 +270,10 @@ class HomepageChecker:
             show_progress (bool): Whether to show a progress bar.
             with_save(bool): if True update the cache
         """
-            
+
         self.set_number = set_number
         self.sample_size = sample_size or len(self.volumes) // set_number
-       
+
         total_volumes = len(self.volumes)
         slot_size = total_volumes // self.set_number
 
@@ -267,10 +283,12 @@ class HomepageChecker:
             )
 
         for set_index in range(self.set_number):
-            set_info=None
-            
+            set_info = None
+
             start_index = set_index * slot_size
-            middle_start = start_index + ((slot_size - self.sample_size) // 2 if self.set_number > 1 else 0)
+            middle_start = start_index + (
+                (slot_size - self.sample_size) // 2 if self.set_number > 1 else 0
+            )
             middle_end = middle_start + self.sample_size
             sample_volumes = self.volumes[middle_start:middle_end]
 
@@ -280,8 +298,10 @@ class HomepageChecker:
                 is_accessible = self.check_availability(homepage, volume_number)
                 # Create set_info only if it's the first volume in the set
                 if set_info is None:
-                    set_info = VolumeSetInfo(set_index + 1, volume_number, volume_number)
-             
+                    set_info = VolumeSetInfo(
+                        set_index + 1, volume_number, volume_number
+                    )
+
                 # Update set_info and store detailed result
                 set_info.update(volume_number, is_accessible)
                 self.results.append(
@@ -290,7 +310,7 @@ class HomepageChecker:
 
                 if show_progress:
                     progress_bar.update(1)
-                    
+
             if set_info:
                 self.set_infos.append(set_info)
 
