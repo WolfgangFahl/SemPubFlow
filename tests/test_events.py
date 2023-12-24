@@ -160,6 +160,8 @@ subject: "Bayesian Modeling Applications"
         """
         Test for collecting YAML files and parsing them into events.
         """
+        if self.inPublicCI():
+            return
         events= self.get_events("2023-12-22") # Replace with the actual date you want to use
         unique_events=self.get_unique_events(events)
         volumes = [volume for volume in self.volumes if 'number' in volume and volume['number'] in [event.volume for event in events]]

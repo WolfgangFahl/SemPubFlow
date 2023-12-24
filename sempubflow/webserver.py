@@ -13,6 +13,7 @@ from ngwidgets.users import Users
 from ngwidgets.webserver import WebserverConfig
 from nicegui import Client, app, run, ui
 
+from sempubflow.admin import Admin
 from sempubflow.elements.proceedings_form import ProceedingsForm
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.event_info import EventInfo
@@ -236,6 +237,12 @@ class WebServer(InputWebserver):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.home()
+        
+        @ui.page("/admin")
+        async def admin(_client: Client):
+            if not self.login.authenticated():
+                return RedirectResponse("/login")
+            return await self.admin()
 
         @ui.page("/settings")
         async def settings(client: Client):
@@ -244,7 +251,9 @@ class WebServer(InputWebserver):
             return await self.settings()
 
         @ui.page("/user/{username}")
-        async def show_user(client:Client,username:str):
+        async def show_user(_client:Client,username:str):
+            if not self.login.authenticated():
+                return RedirectResponse("/login")
             return await self.show_user(username)
         
         @ui.page("/scholar")
@@ -265,14 +274,21 @@ class WebServer(InputWebserver):
         """
         self.link_button("scholar", "/scholar", "school")
         self.link_button("volume", "/create_volume", "library_books")
+        self.link_button("admin", "/admin", "database")
         username = app.storage.user.get("username", "?")
         self.link_button(username, f"/user/{username}", "person")
 
-    async def show_user(self,username):
+    async def show_user(self,username:str):
         """
+        show the user with the given username
         """
         def show():
             ui.label(username)
+        await self.setup_content_div(show)
+        
+    async def admin(self):
+        def show():
+            admin=Admin()
         await self.setup_content_div(show)
         
     async def settings(self):
