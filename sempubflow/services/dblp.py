@@ -1,14 +1,20 @@
+"""
+Created 2023
+
+@author: th
+"""
 from typing import List, Optional
 
 import requests
 from lodstorage.sparql import SPARQL
 
-from sempubflow.models.scholar import Scholar, ScholarSearchMask
+from sempubflow.models.scholar import Scholar
 
 
 class Dblp:
     """
-
+    dblp computer science bibliography access
+    https://dblp.org/
     """
 
     def __init__(self, sparql_endpoint_url: Optional[str] = None, endpoint_url: Optional[str] = None):
@@ -19,7 +25,7 @@ class Dblp:
         self.sparql_endpoint = SPARQL(sparql_endpoint_url)
         self.endpoint_url = endpoint_url
 
-    def get_scholar_suggestions(self, search_mask: ScholarSearchMask) -> List[Scholar]:
+    def get_scholar_suggestions(self, search_mask: Scholar) -> List[Scholar]:
         """
         Given a search mask query wikidata  for matching scholars
         Args:

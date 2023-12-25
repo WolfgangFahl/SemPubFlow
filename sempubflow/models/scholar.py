@@ -22,11 +22,11 @@ class Scholar:
 
     @property
     def name(self) -> str:
-        return f"{self.given_name} {self.family_name}"
-
-
-class ScholarSearchMask(Scholar):
-    """
-    search mask for a scholar
-    contains incomplete information about a scholar
-    """
+        if not self.given_name and not self.family_name:
+            return ""  # empty
+        elif not self.given_name:
+            return self.family_name
+        elif not self.family_name:
+            return self.given_name
+        else:
+            return f"{self.given_name} {self.family_name}"

@@ -1,18 +1,27 @@
+"""
+Created 2023
+
+@author: th
+"""
 from typing import List, Optional
 
 from lodstorage.sparql import SPARQL
 
-from sempubflow.models.scholar import Scholar, ScholarSearchMask
+from sempubflow.models.scholar import Scholar
 
 
 class Wikidata:
+    """
+    Wikdata access
+    """
 
-    def __init__(self, endpoint_url: Optional[str] = None):
+    def __init__(self, endpoint_url: Optional[str] = None, limit:int=5000):
         if endpoint_url is None:
             endpoint_url = "https://qlever.cs.uni-freiburg.de/api/wikidata"
         self.endpoint = SPARQL(endpoint_url)
+        self.limit=limit
 
-    def get_scholar_suggestions(self, search_mask: ScholarSearchMask) -> List[Scholar]:
+    def get_scholar_suggestions(self, search_mask: Scholar) -> List[Scholar]:
         """
         Given a search mask query wikidata  for matching scholars
         Args:
@@ -49,7 +58,7 @@ class Wikidata:
               {filters}
               
             }}
-            LIMIT 5000
+            LIMIT {self.limit}
         """
         lod = self.endpoint.queryAsListOfDicts(query)
         res = []
@@ -57,7 +66,7 @@ class Wikidata:
             qid = d.get("scholar", None)
             if qid:
                 qid = qid.replace("http://www.wikidata.org/entity/", "")
-            scholar = Scholar(
+                scholar = Scholar(
                     label=d.get("label", None),
                     given_name=d.get("given_name", None),
                     family_name=d.get("family_name", None),

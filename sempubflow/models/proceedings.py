@@ -1,3 +1,8 @@
+"""
+Created 2023
+
+@author: th
+"""
 from dataclasses import dataclass, fields
 from datetime import date, datetime
 from enum import Enum

@@ -1,3 +1,8 @@
+"""
+Created 2023
+
+@author: th
+"""
 from dataclasses import dataclass
 from typing import Optional
 

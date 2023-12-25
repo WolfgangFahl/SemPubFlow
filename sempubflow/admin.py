@@ -6,7 +6,7 @@ Created 2023-12-24
 from nicegui import ui, run
 from ceurws.wikidatasync import DblpEndpoint
 from ngwidgets.progress import NiceguiProgressbar
-import time
+
 class Admin:
     """
     Administration panel for managing DBLP endpoint and cache.
@@ -36,13 +36,6 @@ class Admin:
         if self.endpoint_url is None or url!=self.endpoint_url: 
             self.endpoint_url = url  # Store the given or default endpoint URL
             self.endpoint = DblpEndpoint(self.endpoint_url) 
-            # Map cache names to their respective functions in DblpEndpoint
-            self.cache_functions = {
-                'dblp/authors': self.endpoint.get_all_ceur_authors,
-                'dblp/editors': self.endpoint.get_all_ceur_editors,
-                'dblp/papers': self.endpoint.get_all_ceur_papers,
-                'dblp/volumes': self.endpoint.get_all_ceur_proceedings,
-            }
         
     def setup(self):
         """
@@ -68,7 +61,7 @@ class Admin:
                 self.force_query_checkbox = ui.checkbox('Force Query').bind_value(self, "force_query")
 
             # Initialize the progress bar with total steps equal to the number of cache functions
-            self.progress_bar = NiceguiProgressbar(total=len(self.cache_functions), desc="Updating Caches", unit="cache")
+            self.progress_bar = NiceguiProgressbar(total=len(self.endpoint.cache_functions), desc="Updating Caches", unit="cache")
 
             # Show initial cache status
             self.update_cache_info()
@@ -98,7 +91,7 @@ class Admin:
 
     def background_cache_update(self):
         """Background task to refresh data in caches."""
-        for step, (cache_name, cache_function) in enumerate(self.cache_functions.items(), start=1):
+        for step, (cache_name, cache_function) in enumerate(self.endpoint.cache_functions.items(), start=1):
             # Call the corresponding function to refresh cache data
             cache_function(force_query=self.force_query)
             with self.card:
@@ -121,6 +114,6 @@ class Admin:
     def update_cache_info(self):
         """Retrieves and dynamically adds cache status rows to the table."""
         self.table.rows.clear()
-        for cache_name in self.cache_functions.keys():
+        for cache_name in self.endpoint.cache_functions.keys():
             info = self.endpoint.json_cache_manager.get_cache_info(cache_name)
             self.update_cache_info_row(info)
