@@ -1,68 +1,67 @@
+import traceback
 import re
 from typing import Callable, List, Optional, Union
 
 from nicegui import ui
-from nicegui.binding import bind_from
 from nicegui.element import Element
 
 from sempubflow.models.affiliation import Affiliation
 from sempubflow.models.scholar import Scholar
+from ngwidgets.dict_edit import DictEdit
 
-
-class AffiliationForm(Element):
+class AffiliationForm(DictEdit):
     """
     Affiliation of a scholar typically describes an institution or organization
     """
 
-    def __init__(self, affiliation: Optional[Affiliation] = None):
-        super().__init__(tag="div")
-        if affiliation is None:
-            affiliation = Affiliation()
-        self.affiliation = affiliation
-        ui.input(label="name").bind_value(self.affiliation, "name")
-        ui.input(label="location").bind_value(self.affiliation, "location")
-        ui.input(label="country").bind_value(self.affiliation, "country")
-        ui.input(
-                label="wikidata_id",
-                validation={"Invalid Wikidata ID": lambda value: Validator.validate_wikidata_qid(value)}
-         ).bind_value(self.affiliation, "wikidata_id")
+    def __init__(self, affiliation: Optional[Affiliation] = None, **kwargs):
+        self.affiliation = affiliation or Affiliation()
+        
+        # Customization for affiliation fields
+        affiliation_customization = {
+            '_form_': {"icon": "house"},
+            'name': {'label': 'Name', 'size': 50},
+            'location': {'label': 'Location', 'size': 50},
+            'country': {'label': 'Country', 'size': 50},
+            'wikidata_id': {'label': 'Wikidata ID', 'size': 50, 'validation': Validator.validate_wikidata_qid},
+        }
+        super().__init__(self.affiliation, customization=affiliation_customization,**kwargs)
+     
 
-
-class ScholarForm(Element):
+class ScholarForm(DictEdit):
     """
     Form to enter data about a scholar
     """
 
-    def __init__(self, add_affiliation_callback: Optional[Callable] = None):
-        super().__init__(tag="div")
-        self.scholar = Scholar()
-        ui.input(label="given name").bind_value(self.scholar, "given_name")
-        ui.input(label="family name").bind_value(self.scholar, "family_name")
-        ui.input(
-                label="wikidata id",
-                validation={"Invalid Wikidata ID": Validator.validate_wikidata_qid}
-        ).bind_value(self.scholar, "wikidata_id")
-        ui.input(label="ORCID id").bind_value(self.scholar, "orcid_id")
-        ui.input(label="dblp author id").bind_value(self.scholar, "dblp_author_id")
-        ui.input(label="official website").bind_value(self.scholar,"official_website")
-        self.affiliations_container = ui.card()
-        if add_affiliation_callback is None:
-            add_affiliation_callback = ScholarForm.add_affiliation_form
-        ui.button(icon='add', text="Add Affiliation", on_click=lambda: add_affiliation_callback(self))
-
+    def __init__(self, scholar:Optional[Scholar]=None, add_affiliation_callback: Optional[Callable] = None, **kwargs):
+        self.scholar = scholar or Scholar()
+        try:     
+            scholar_customization = {
+                '_form_': {"icon": "person"},
+                'given_name': {'label': 'Given Name', 'size': 50},
+                'family_name': {'label': 'Family Name', 'size': 50},
+                'wikidata_id': {'label': 'Wikidata ID', 'size': 50, 'validation': Validator.validate_wikidata_qid},
+                # add other field customizations as needed
+                'orcid_id': {'label': 'ORCID ID', 'size': 50},
+                'dblp_author_id': {'label': 'DBLP Author ID', 'size': 50},
+                'official_website': {'label': 'Official Website', 'size': 50},
+            }
+            super().__init__(self.scholar, customization=scholar_customization,**kwargs)
+            self.affiliations_container = ui.card()
+            ui.button(icon='add', text="Add Affiliation", on_click=lambda: add_affiliation_callback(self))    
+        except Exception as ex:
+            print(ex)
+            print(traceback.format_exc())
+            pass
+ 
     def add_affiliation_form(self, affiliation: Optional[Affiliation] = None):
         with self.affiliations_container:
             ui.notify(f"Adding Affiliation")
-            with ui.expansion(text="Affiliation", icon='house').classes('w-full') as expansion:
-                af = AffiliationForm(affiliation)
-                bind_from(expansion._props, 'label', af.affiliation, "name",
-                          backward=lambda x: f"Affiliation: {x}")
-                if self.scholar.affiliation is None:
+            af = AffiliationForm(affiliation)
+            if self.scholar.affiliation is None:
                     self.scholar.affiliation = []
-                self.scholar.affiliation.append(af.affiliation)
-
+            self.scholar.affiliation.append(af.affiliation)
             ui.separator()
-
 
 class ScholarsListForm(Element):
     """
@@ -82,11 +81,10 @@ class ScholarsListForm(Element):
         with self.scholars_container:
             ui.notify(self.ADD_BUTTON_NOTIFICATION)
             with ui.row().classes("w-full") as row:
-                with ui.expansion(text="Scholar", icon='person') as expansion:
-                    form = ScholarForm(add_affiliation_callback=self.affiliation_dialog)
-                    bind_from(expansion._props, 'label', form.scholar, "name", lambda x: f"{self.EXPANSION_LABEL_PREFIX}{x}")
-                    self.scholars.append(form.scholar)
-                ui.button(icon="delete", on_click=lambda: self.delete_scholar(form, row))
+                form = ScholarForm(add_affiliation_callback=self.affiliation_dialog)
+                self.scholars.append(form.scholar)
+                with form.card:
+                    ui.button(icon="delete", on_click=lambda: self.delete_scholar(form, row))
 
     def delete_scholar(self, scholar_form: ScholarForm, element: Element):
         """

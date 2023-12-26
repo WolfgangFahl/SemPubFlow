@@ -16,3 +16,10 @@ class Affiliation:
     location: Optional[str] = None
     country: Optional[str] = None
     wikidata_id: Optional[str] = None
+    
+    @property
+    def ui_label(self) -> str:
+        if not self.name:
+            return "❓"  # empty
+        else:
+            return self.name

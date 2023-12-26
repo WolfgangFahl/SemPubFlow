@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import dateutil.parser
 from nicegui import ui
-from nicegui.binding import bind_from, bind_to
+from nicegui.binding import bind_from
 from nicegui.element import Element
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
@@ -62,7 +62,7 @@ class ProceedingsForm(Element):
         DisplayResults(self.proceeding)
 
     def add_event_form(self, clazz: type, container: ui.card):
-         with container:
+        with container:
             ui.notify(f"Add {clazz.__name__}")
             with ui.expansion(text=clazz.__name__, icon='event') as expansion:
                 expansion.classes('w-full')

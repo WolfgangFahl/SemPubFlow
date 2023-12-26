@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
-
 from sempubflow.models.affiliation import Affiliation
-
 
 @dataclass
 class Scholar:
@@ -18,15 +16,18 @@ class Scholar:
     image: Optional[str] = None
     affiliation: Optional[List[Affiliation]] = None
     official_website: Optional[str] = None
-
-
+    
     @property
     def name(self) -> str:
         if not self.given_name and not self.family_name:
-            return ""  # empty
+            return "❓"  # empty
         elif not self.given_name:
             return self.family_name
         elif not self.family_name:
             return self.given_name
         else:
             return f"{self.given_name} {self.family_name}"
+
+    @property
+    def ui_label(self) -> str:
+        return self.name
