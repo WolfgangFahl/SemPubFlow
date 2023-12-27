@@ -186,19 +186,11 @@ class TestWikidataSpt(Basetest):
                     qid=proc_url.replace("http://www.wikidata.org/entity/","")
                     print(f'''wd add-claim {qid} P8978 "{dblp_id}"''')
 
-          
-    def testIdSync(self):
-        """
-        test id sync
-        """
-        self.get_unused_volumes()
+    def get_valid_volumes(self):
         special_cases={
             "2284": "Volume MLSA-2018 deleted upon editor request, 2019-02-28 ",
             "3021": "The volume number 3021 is not used by CEUR-WS.org"
         }
-        
-        invalid_volumes = [v["number"] for v in self.volumes if not v['valid']]
-        print (invalid_volumes)
         # Remove any volumes that are in the special cases
         # Adapt the local volumes to have 'number_str' entry
         valid_volumes = []
@@ -207,7 +199,17 @@ class TestWikidataSpt(Basetest):
                 # Add 'number_str' as a string representation of 'number'
                 volume['number_str'] = str(volume['number'])
                 valid_volumes.append(volume)
-
+        return valid_volumes
+          
+    def testIdSync(self):
+        """
+        test id sync
+        """
+        self.get_unused_volumes()
+        
+        invalid_volumes = [v["number"] for v in self.volumes if not v['valid']]
+        print (invalid_volumes)
+        valid_volumes=self.get_valid_volumes()
         
         # Fetch the volume records from the SPARQL query
         wd_volumes = self.volume_list.query()
@@ -231,4 +233,23 @@ class TestWikidataSpt(Basetest):
       
         self.show_ceur_ws_pages(sync,"→")
         self.show_ceur_ws_pages(sync,"←")
+        
+    def test_key_sync(self):
+        """
+        test synching relevant keys
+        """        
+        valid_volumes=self.get_valid_volumes()
+        
+        # Fetch the volume records from the SPARQL query
+        wd_volumes = self.volume_list.query()
+        pair = SyncPair(
+             title=f"CEUR-WS urn Synchronization",
+             l_name="CEUR-WS",
+             r_name="wikidata",
+             l_data=valid_volumes,
+             r_data=wd_volumes,
+             l_key="urn",
+             r_key="urn"
+        )
+        sync=self.show_sync(pair, debug=True)
             
