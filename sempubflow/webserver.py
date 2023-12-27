@@ -3,6 +3,7 @@ Created on 2023-06-19
 
 @author: wf
 """
+import sys
 from fastapi.responses import RedirectResponse
 from ngwidgets.dict_edit import DictEdit
 from ngwidgets.input_webserver import InputWebserver
@@ -10,6 +11,7 @@ from ngwidgets.login import Login
 from ngwidgets.users import Users
 from ngwidgets.webserver import WebserverConfig
 from nicegui import Client, app, ui
+from ngwidgets.widgets import Link
 
 from sempubflow.admin import Admin
 from sempubflow.elements.proceedings_form import ProceedingsForm
@@ -20,6 +22,7 @@ from sempubflow.orcid_auth import ORCIDAuth
 from sempubflow.version import Version
 from sempubflow.scholar_selector import ScholarSelector
 
+from ngwidgets.lod_grid import ListOfDictsGrid, GridConfig
 
 class HomePageSelector:
     """
@@ -70,9 +73,6 @@ class HomePageSelector:
         self.status.set_text(status_msg)
         pass
 
-
-
-
 class WebServer(InputWebserver):
     """
     webserver
@@ -119,7 +119,7 @@ class WebServer(InputWebserver):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.show_user(username)
-        
+              
         @ui.page("/scholar")
         async def scholar_search(client: Client):
             return await self.scholar_search()
@@ -172,6 +172,7 @@ class WebServer(InputWebserver):
 
         await self.setup_content_div(show)
 
+ 
     async def scholar_search(self):
         def show():
             self.scholar_selector = ScholarSelector(self)
