@@ -80,11 +80,12 @@ class Homepage(YamlAble["Homepage"]):
         soup = None
         try:
             self.read()
-            soup = BeautifulSoup(self.html, features="html.parser")
-
-            # kill all script and style elements
-            for script in soup(["script", "style"]):
-                script.extract()  # rip it out
+            if not text:
+                soup = BeautifulSoup(self.html, features="html.parser")
+    
+                # kill all script and style elements
+                for script in soup(["script", "style"]):
+                    script.extract()  # rip it out
         except Exception as ex:
             # shall we log the exception here?
             print(str(ex), file=sys.stderr)
