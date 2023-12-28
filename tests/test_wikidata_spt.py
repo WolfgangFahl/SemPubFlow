@@ -172,14 +172,17 @@ class TestWikidataSpt(Basetest):
              l_data=dblp_volumes,
              r_data=wd_volumes,
              l_key=dblp_key,
-             r_key=wd_key
+             r_key=wd_key,
+             l_pkey="volume_number",
+             r_pkey="sVolume"
         )
         sync=self.show_sync(pair, debug=True)
         dblp_ids=sync.get_keys("→")
         for dblp_id in dblp_ids:
-            dblp_record = next((item for item in pair.l_data if item[dblp_key] == dblp_id), None)
+            dblp_record = sync.get_record_by_key("left", dblp_id)
             if dblp_record:
                 vol_number=str(dblp_record["volume_number"]) 
+                print(f"Volume {vol_number}")
                 wd_record = next((item for item in wd_volumes if item["sVolume"] == vol_number), None)
                 if wd_record and "proceeding" in wd_record:
                     proc_url=wd_record["proceeding"]
