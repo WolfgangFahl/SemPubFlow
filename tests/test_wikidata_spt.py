@@ -54,6 +54,16 @@ ORDER BY DESC (xsd:integer(?sVolume))"""
     def query(self):
         lod=self.sparql.queryAsListOfDicts(self.sparql_query)
         return lod
+    
+    def get_qid(self,wd_record:dict)->str:
+        """
+        get the wikidata id of the wikidata record
+        """
+        qid=None
+        if wd_record and "proceeding" in wd_record:
+            proc_url=wd_record["proceeding"]
+            qid=proc_url.replace("http://www.wikidata.org/entity/","")
+        return qid       
  
 
 class TestWikidataSpt(Basetest):
@@ -152,44 +162,12 @@ class TestWikidataSpt(Basetest):
         print("Unused volume numbers:", missing_volumes)
        
        
-    def test_dblp_sync(self):
-        """
-        test dblp synchronization
-        """
-        dblp_volumes=self.get_from_json(self.dblp_volumes_path)
-        dblp_volumes = [{k: v.replace('https://dblp.org/rec/', '') if k == 'dblp_publication_id' else v for k, v in d.items()} for d in dblp_volumes]
-
-        # Fetch the volume records from the SPARQL query
-        wd_volumes = self.volume_list.query()
-        dblp_key="dblp_publication_id"
-        wd_key="dblpPublicationId"
-        #"https://dblp.org/rec/conf/eumas/2006"
-
-        pair = SyncPair(
-             title=f"{dblp_key} Synchronization",
-             l_name="dblp",
-             r_name="wikidata",
-             l_data=dblp_volumes,
-             r_data=wd_volumes,
-             l_key=dblp_key,
-             r_key=wd_key,
-             l_pkey="volume_number",
-             r_pkey="sVolume"
-        )
-        sync=self.show_sync(pair, debug=True)
-        dblp_ids=sync.get_keys("→")
-        for dblp_id in dblp_ids:
-            dblp_record = sync.get_record_by_key("left", dblp_id)
-            if dblp_record:
-                vol_number=str(dblp_record["volume_number"]) 
-                print(f"Volume {vol_number}")
-                wd_record = next((item for item in wd_volumes if item["sVolume"] == vol_number), None)
-                if wd_record and "proceeding" in wd_record:
-                    proc_url=wd_record["proceeding"]
-                    qid=proc_url.replace("http://www.wikidata.org/entity/","")
-                    print(f'''wd add-claim {qid} P8978 "{dblp_id}"''')
-
+ 
     def get_valid_volumes(self):
+        valid_volumes=self.filter_valid_volumes(self.volumes)
+        return valid_volumes
+    
+    def filter_valid_volumes(self,lod,key:str="number"):
         special_cases={
             "2284": "Volume MLSA-2018 deleted upon editor request, 2019-02-28 ",
             "3021": "The volume number 3021 is not used by CEUR-WS.org"
@@ -197,21 +175,23 @@ class TestWikidataSpt(Basetest):
         # Remove any volumes that are in the special cases
         # Adapt the local volumes to have 'number_str' entry
         valid_volumes = []
-        for volume in self.volumes:
-            if str(volume['number']) not in special_cases:
+        for volume in lod:
+            if str(volume[key]) not in special_cases:
                 # Add 'number_str' as a string representation of 'number'
-                volume['number_str'] = str(volume['number'])
+                volume['number_str'] = str(volume[key])
                 valid_volumes.append(volume)
         return valid_volumes
+    
+    def testUnusedVolumesNumbers(self):
+        self.get_unused_volumes()
+        
+        invalid_volumes = [v["number"] for v in self.volumes if not v['valid']]
+        print (invalid_volumes)
           
     def testIdSync(self):
         """
         test id sync
         """
-        self.get_unused_volumes()
-        
-        invalid_volumes = [v["number"] for v in self.volumes if not v['valid']]
-        print (invalid_volumes)
         valid_volumes=self.get_valid_volumes()
         
         # Fetch the volume records from the SPARQL query
@@ -237,9 +217,46 @@ class TestWikidataSpt(Basetest):
         self.show_ceur_ws_pages(sync,"→")
         self.show_ceur_ws_pages(sync,"←")
         
-    def test_key_sync(self):
+    def test_dblp_sync(self):
         """
-        test synching relevant keys
+        test dblp synchronization
+        """
+        dblp_volumes=self.get_from_json(self.dblp_volumes_path)
+        dblp_volumes = [{k: v.replace('https://dblp.org/rec/', '') if k == 'dblp_publication_id' else v for k, v in d.items()} for d in dblp_volumes]
+        dblp_volumes = self.filter_valid_volumes(dblp_volumes, "volume_number")
+        # Fetch the volume records from the SPARQL query
+        wd_volumes = self.volume_list.query()
+        dblp_key="dblp_publication_id"
+        wd_key="dblpPublicationId"
+        #"https://dblp.org/rec/conf/eumas/2006"
+
+        pair = SyncPair(
+             title=f"{dblp_key} Synchronization",
+             l_name="dblp",
+             r_name="wikidata",
+             l_data=dblp_volumes,
+             r_data=wd_volumes,
+             l_key=dblp_key,
+             r_key=wd_key,
+             l_pkey="volume_number",
+             r_pkey="sVolume"
+        )
+        sync=self.show_sync(pair, debug=True)
+        dblp_ids=sync.get_keys("→")
+        for dblp_id in dblp_ids:
+            dblp_record = sync.get_record_by_key("left", dblp_id)
+            if dblp_record:
+                vol_number=str(dblp_record["volume_number"]) 
+                print(f"Volume {vol_number}")
+                wd_record = sync.get_record_by_pkey("right",vol_number)
+                qid=self.volume_list.get_qid(wd_record)
+                if qid:
+                    print(f'''wd add-claim {qid} P8978 "{dblp_id}"''')
+
+        
+    def test_urn_sync(self):
+        """
+        test synching by urn
         """        
         valid_volumes=self.get_valid_volumes()
         
@@ -252,7 +269,20 @@ class TestWikidataSpt(Basetest):
              l_data=valid_volumes,
              r_data=wd_volumes,
              l_key="urn",
-             r_key="urn"
+             r_key="urn",
+             l_pkey="number_str",
+             r_pkey="sVolume"
         )
-        sync=self.show_sync(pair, debug=True)
+        sync=self.show_sync(pair, debug=True,tablefmt="latex")
+        urn_ids=sync.get_keys("→")
+        for urn_id in urn_ids:
+            urn_record = sync.get_record_by_key("left", urn_id)
+            if urn_record:
+                vol_number=urn_record["number_str"]
+                print(f"Volume {vol_number}")
+                wd_record = sync.get_record_by_pkey("right",vol_number)
+                qid=self.volume_list.get_qid(wd_record)
+                if qid:
+                    print(f'''wd add-claim {qid} P4109 "{urn_id}"''')
+
             
