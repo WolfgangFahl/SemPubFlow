@@ -7,7 +7,6 @@ import json
 
 from sempubflow.homepage import Homepage
 
-
 class EventInfo:
     """
     check the event metadata
@@ -21,6 +20,9 @@ class EventInfo:
         self.lines = 0
 
     def status_msg(self) -> str:
+        """
+        provide a status message
+        """
         if self.text:
             self.chars = len(self.text)
             self.lines = self.text.count("\n")

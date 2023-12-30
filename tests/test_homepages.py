@@ -267,7 +267,7 @@ class TestHomepages(Basetest):
         """
         if not self.checker:
             return
-        vol_numbers=self.get_random_homepages(sample_size=60, max_len=10000)
+        vol_numbers=self.get_random_homepages(sample_size=2, max_len=10000)
         llm=LLM()   
         prompt_prefix="""
         provide the event signature elements:

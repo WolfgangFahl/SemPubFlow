@@ -254,6 +254,10 @@ class TestWikidataSpt(Basetest):
                     print(f'''wd add-claim {qid} P8978 "{dblp_id}"''')
 
         
+    def test_urn_checkdigits(self):
+        """
+        """
+        
     def test_urn_sync(self):
         """
         test synching by urn
