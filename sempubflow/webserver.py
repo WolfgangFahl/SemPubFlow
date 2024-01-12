@@ -124,6 +124,9 @@ class WebServer(InputWebserver):
         await self.setup_content_div(show)
 
     async def home(self):
+        """
+        home page selection
+        """
         def show():
             self.homepageSelector = HomePageSelector(self)
 

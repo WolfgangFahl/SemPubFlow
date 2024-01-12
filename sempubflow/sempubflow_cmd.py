@@ -6,9 +6,7 @@ Created on 2023-06-19
 import sys
 
 from ngwidgets.cmd import WebserverCmd
-from ngwidgets.profiler import Profiler
 from sempubflow.webserver import WebServer
-
 
 class SemPubFlowCmd(WebserverCmd):
     """

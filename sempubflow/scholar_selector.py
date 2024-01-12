@@ -92,7 +92,7 @@ class ScholarSelector:
         """
         search_mask = self._get_search_mask()
         name=search_mask.name
-        if len(name) > 4:  # quick fix to avoid queries on empty input fields
+        if len(name) >= 6:  # quick fix to avoid queries on empty input fields
             self.profilers["dblp"].start()
             suggested_scholars_dblp = await run.io_bound(
                 Dblp().get_scholar_suggestions, search_mask
@@ -109,6 +109,9 @@ class ScholarSelector:
             self.update_suggestion_list(self.suggestion_list_wd, suggested_scholars_wd)
 
     def update_suggestion_list(self, container: ui.element, suggestions: List[Scholar]):
+        """
+        update the suggestions list
+        """
         container.clear()
         with container:
             if len(suggestions) <= 10:
