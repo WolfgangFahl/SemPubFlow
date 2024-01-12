@@ -56,15 +56,16 @@ class LLM:
     # Define a dictionary that maps models to their size limits
     MODEL_SIZE_LIMITS = {
         "gpt-3.5-turbo": 4096,  # Adjust this limit as needed for other models
+        "gpt-3.5-turbo-16k": 4096*4,
     }
 
     # Define a constant for the average token character length
     AVERAGE_TOKEN_CHAR_LEN = 4  # Adjust this value based on the model
-
+    DEFAULT_MODEL = "gpt-3.5-turbo"
     def __init__(
         self,
         api_key: str = None,
-        model="gpt-3.5-turbo",
+        model=DEFAULT_MODEL,
         force_key: bool = False,
         prompts_filepath: str = None,
     ):
@@ -81,7 +82,7 @@ class LLM:
             model, 4096
         )  # Default to 4096 if model not found
         self.char_size_limit = self.token_size_limit * LLM.AVERAGE_TOKEN_CHAR_LEN
-
+        openai_api_key=None
         if api_key:
             # If an API key is provided during object creation, set it.
             openai.api_key = api_key
@@ -106,7 +107,8 @@ class LLM:
         openai.api_key = openai_api_key
         # If prompts_filepath is None, use default path in the user's home directory with the current date
         if prompts_filepath is None:
-            date_str = datetime.now().strftime("%Y-%m")  # Formats the date as YYYY-MM
+            # Format: Year-Month-Day
+            date_str = datetime.now().strftime("%Y-%m-%d")
             default_filename = f"prompts_{date_str}.yaml"  # Constructs the file name
             openai_dir = (
                 Path.home() / ".openai"
