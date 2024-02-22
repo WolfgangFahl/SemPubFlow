@@ -4,8 +4,9 @@ Created on 2023-06-19
 @author: wf
 """
 import sempubflow
+from dataclasses import dataclass
 
-
+@dataclass
 class Version(object):
     """
     Version handling for SemanticPublishingFlow
@@ -14,7 +15,7 @@ class Version(object):
     name = "SemanticPublishingFlow"
     version = sempubflow.__version__
     date = "2023-06-19"
-    updated = "2023-12-18"
+    updated = "2024-02-22"
     description = "Semantic Publishing Workflow support"
 
     authors = "Wolfgang Fahl"

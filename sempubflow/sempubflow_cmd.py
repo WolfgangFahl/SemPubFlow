@@ -7,7 +7,7 @@ import sys
 
 from ngwidgets.cmd import WebserverCmd
 
-from sempubflow.webserver import WebServer
+from sempubflow.webserver import SemPubFlowWebServer
 
 
 class SemPubFlowCmd(WebserverCmd):
@@ -19,8 +19,8 @@ class SemPubFlowCmd(WebserverCmd):
         """
         constructor
         """
-        config = WebServer.get_config()
-        WebserverCmd.__init__(self, config, WebServer, DEBUG)
+        config = SemPubFlowWebServer.get_config()
+        WebserverCmd.__init__(self, config, SemPubFlowWebServer, DEBUG)
         pass
 
 
