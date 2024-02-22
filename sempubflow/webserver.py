@@ -14,8 +14,9 @@ from sempubflow.admin import Admin
 from sempubflow.elements.proceedings_form import ProceedingsForm
 from sempubflow.homepage_selector import HomePageSelector
 from sempubflow.orcid_auth import ORCIDAuth
-from sempubflow.version import Version
 from sempubflow.scholar_selector import ScholarSelector
+from sempubflow.version import Version
+
 
 class WebServer(InputWebserver):
     """
@@ -45,7 +46,7 @@ class WebServer(InputWebserver):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.home()
-        
+
         @ui.page("/admin")
         async def admin(client: Client):
             if not self.login.authenticated():
@@ -59,11 +60,11 @@ class WebServer(InputWebserver):
             return await self.settings()
 
         @ui.page("/user/{username}")
-        async def show_user(client:Client,username:str):
+        async def show_user(client: Client, username: str):
             if not self.login.authenticated():
                 return RedirectResponse("/login")
             return await self.show_user(username)
-              
+
         @ui.page("/scholar")
         async def scholar_search(client: Client):
             return await self.scholar_search()
@@ -86,22 +87,26 @@ class WebServer(InputWebserver):
         username = app.storage.user.get("username", "?")
         self.link_button(username, f"/user/{username}", "person")
 
-    async def show_user(self,username:str):
+    async def show_user(self, username: str):
         """
         show the user with the given username
         """
+
         def show():
             ui.label(username)
+
         await self.setup_content_div(show)
-        
+
     async def admin(self):
         """
         admin interface
         """
+
         def show():
-            self.admin_view=Admin(self)
+            self.admin_view = Admin(self)
+
         await self.setup_content_div(show)
-        
+
     async def settings(self):
         def show():
             ui.label("timeout")
@@ -116,7 +121,6 @@ class WebServer(InputWebserver):
 
         await self.setup_content_div(show)
 
- 
     async def scholar_search(self):
         def show():
             self.scholar_selector = ScholarSelector(self)
@@ -127,6 +131,7 @@ class WebServer(InputWebserver):
         """
         home page selection
         """
+
         def show():
             self.homepageSelector = HomePageSelector(self)
 

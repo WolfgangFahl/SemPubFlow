@@ -3,29 +3,31 @@ Created on 2023-06-22
 
 @author: wf
 """
-from sempubflow.llm import LLM
-from sempubflow.homepage import Homepage
+from ngwidgets.llm import LLM
+
 from sempubflow.event import Event
+from sempubflow.homepage import Homepage
+
 
 class EventInfo:
     """
     check the event metadata
     """
 
-    def __init__(self, llm, debug:bool=False):
+    def __init__(self, llm, debug: bool = False):
         """
         construct me with the given llm
-        
+
         Args:
             llm(LLM): the large language model to use
         """
         self.llm = llm
         self.text = None
         self.homepage = None
-        self.debug=debug
+        self.debug = debug
         self.chars = 0
         self.lines = 0
-        self.prompt_prefix="""
+        self.prompt_prefix = """
         provide the event signature elements:
 - Acronym: The short name of the conference, often in uppercase.
 - Frequency: How often the event occurs, like annual or biennial.
@@ -104,18 +106,22 @@ Extract as instructed from the following homepage text:
             result = "❌"
         return result
 
-    def get_event_metadata_from_homepage(self, homepage:Homepage=None, model:str=LLM.DEFAULT_MODEL,temperature:float=0.0):
+    def get_event_metadata_from_homepage(
+        self,
+        homepage: Homepage = None,
+        model: str = LLM.DEFAULT_MODEL,
+        temperature: float = 0.0,
+    ):
         """
         get the metadata for the given homepage
         """
-        self.homepage=homepage
+        self.homepage = homepage
         self.text = self.homepage.get_text()
-        event=None
+        event = None
         if self.llm.available():
-            prompt_text=f"{self.prompt_prefix}\n{self.text}"
-            yaml_str=self.llm.ask(prompt_text,model=model,temperature=temperature)
+            prompt_text = f"{self.prompt_prefix}\n{self.text}"
+            yaml_str = self.llm.ask(prompt_text, model=model, temperature=temperature)
             if self.debug:
-                print (f"{self.homepage.volume}:\n{yaml_str}")
-            event=Event.from_yaml(yaml_str)
-        return event 
-   
+                print(f"{self.homepage.volume}:\n{yaml_str}")
+            event = Event.from_yaml(yaml_str)
+        return event

@@ -3,27 +3,30 @@ Created 2023
 
 @author: th
 """
-from nicegui import ui, run
-from typing import Optional, List
+from typing import List, Optional
+
+from ngwidgets.profiler import Profiler
+from nicegui import run, ui
+
 from sempubflow.elements.suggestion import ScholarSuggestion
 from sempubflow.models.scholar import Scholar
 from sempubflow.services.dblp import Dblp
 from sempubflow.services.wikidata import Wikidata
-from ngwidgets.profiler import Profiler
+
 
 class ScholarSelector:
     """
     Select a scholar with auto-suggestion
     """
 
-    def __init__(self,webserver):
+    def __init__(self, webserver):
         """
         Constructor
         """
-        self.webserver=webserver
-        self.profilers={
-            "dblp": Profiler("dblp search",profile=True,with_start=False),
-            "wikidata": Profiler("wikidata search",profile=True,with_start=False)
+        self.webserver = webserver
+        self.profilers = {
+            "dblp": Profiler("dblp search", profile=True, with_start=False),
+            "wikidata": Profiler("wikidata search", profile=True, with_start=False),
         }
         ui.add_head_html(
             '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">'
@@ -64,7 +67,7 @@ class ScholarSelector:
                             },
                             value="wikidata_id",
                             on_change=self.suggest_scholars,
-                        ).props('inline')
+                        ).props("inline")
                         self.identifier_input = ui.input(
                             label="identifier",
                             placeholder="""identifier-""",
@@ -91,7 +94,7 @@ class ScholarSelector:
             List of scholars
         """
         search_mask = self._get_search_mask()
-        name=search_mask.name
+        name = search_mask.name
         if len(name) >= 6:  # quick fix to avoid queries on empty input fields
             self.profilers["dblp"].start()
             suggested_scholars_dblp = await run.io_bound(

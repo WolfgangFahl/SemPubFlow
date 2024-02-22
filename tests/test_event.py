@@ -3,9 +3,14 @@ Created on 2023-06-19
 
 @author: wf
 """
+import unittest
+
 from ngwidgets.basetest import Basetest
-from sempubflow.jsoncache import JsonCacheManager
+
+from sempubflow.event_info import EventInfo
 from sempubflow.homepage import Homepage
+from sempubflow.jsoncache import JsonCacheManager
+
 
 class TestEvent(Basetest):
     """
@@ -18,29 +23,29 @@ class TestEvent(Basetest):
         """
         jm = JsonCacheManager()
         vol_list = jm.load_lod("volumes")
-        self.assertTrue(len(vol_list)>3300)
-        limit=10
-        count=0
+        self.assertTrue(len(vol_list) > 3300)
+        limit = 10
+        count = 0
         for vol in vol_list:
-            homepage_url=vol["homepage"]
-            volume=vol["number"]
+            homepage_url = vol["homepage"]
+            volume = vol["number"]
             if homepage_url:
-                homepage=Homepage(volume,url=homepage_url)
-                count+=1
-                is_avail=homepage.check_url()
-                print(f"{count}:{homepage} {is_avail}",flush=True)
-                if count>limit:
+                homepage = Homepage(volume, url=homepage_url)
+                count += 1
+                is_avail = homepage.check_url()
+                print(f"{count}:{homepage} {is_avail}", flush=True)
+                if count > limit:
                     break
-                
+
     def testGetText(self):
         """
         test getting the text from a homepage
         """
-        url="https://escape33-ath.gr/"
-        homepage=Homepage(volume=0,url=url)
-        text=homepage.get_text()
-        chars=len(text)
-        lines=text.count('\n')
+        url = "https://escape33-ath.gr/"
+        homepage = Homepage(volume=0, url=url)
+        text = homepage.get_text()
+        chars = len(text)
+        lines = text.count("\n")
         if self.debug:
             print(f"{url} contains {lines} lines and {chars} chars")
-        self.assertTrue(lines>100)
+        self.assertTrue(lines > 100)

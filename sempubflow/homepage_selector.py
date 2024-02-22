@@ -3,29 +3,31 @@ Created on 2023-12-30
 
 @author: wf
 """
-from nicegui import ui, run
 from ngwidgets.dict_edit import DictEdit
-from sempubflow.llm import LLM
+from ngwidgets.llm import LLM
+from nicegui import run, ui
+
 from sempubflow.event_info import EventInfo
 from sempubflow.homepage import Homepage
+
 
 class HomePageSelector:
     """
     select a home page and analyze it
     """
 
-    def __init__(self,webserver,model="gpt-3.5-turbo-16k"):
+    def __init__(self, webserver, model="gpt-3.5-turbo-16k"):
         """
         constructor
         """
         self.valid = False
         self.timeout = 3.0
-        self.webserver=webserver
-        self.model=model
+        self.webserver = webserver
+        self.model = model
         self.llm = LLM(model=model)
-        self.event_info = EventInfo(self.llm,debug=self.webserver.debug)
+        self.event_info = EventInfo(self.llm, debug=self.webserver.debug)
         self.setup()
-        
+
     def setup(self):
         """
         setup my ui components
@@ -36,7 +38,7 @@ class HomePageSelector:
             on_change=self.on_url_change,
             validation={"URL invalid": lambda _url: self.valid},
         )
-    
+
         with ui.element("div").classes("w-full h-full"):
             with ui.splitter() as splitter:
                 with splitter.before as self.event_view:
@@ -52,13 +54,15 @@ class HomePageSelector:
         """
         try:
             # potentially make model and temperature chooseable
-            event=self.event_info.get_event_metadata_from_homepage(self.homepage,model=self.model,temperature=0.0)
+            event = self.event_info.get_event_metadata_from_homepage(
+                self.homepage, model=self.model, temperature=0.0
+            )
             with self.event_details:
                 self.dict_edit = DictEdit(event)
                 self.dict_edit.expansion.open()
         except Exception as ex:
-            self.webserver.handle_exception(ex)    
-                    
+            self.webserver.handle_exception(ex)
+
     async def on_url_change(self, args):
         """
         react on changing the url homepage value
@@ -79,4 +83,4 @@ class HomePageSelector:
                 self.event_details.clear()
                 self.status.set_text(status_msg)
         except Exception as ex:
-            self.webserver.handle_exception(ex)      
+            self.webserver.handle_exception(ex)

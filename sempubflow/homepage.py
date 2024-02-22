@@ -82,7 +82,7 @@ class Homepage(YamlAble["Homepage"]):
             self.read()
             if not text:
                 soup = BeautifulSoup(self.html, features="html.parser")
-    
+
                 # kill all script and style elements
                 for script in soup(["script", "style"]):
                     script.extract()  # rip it out

@@ -5,19 +5,18 @@ Created on 2023-12-20
 """
 import json
 import os
-import sys
 import random
-from tqdm import tqdm
+import sys
 from datetime import datetime
+
 from ngwidgets.basetest import Basetest
-from sempubflow.homepage import (
-    HomepageChecker,
-    PercentageTable,
-)
-from sempubflow.llm import LLM
-from sempubflow.plot import Histogram
+from ngwidgets.llm import LLM
+from tqdm import tqdm
+
 from sempubflow.event import Event, Events
 from sempubflow.event_info import EventInfo
+from sempubflow.homepage import HomepageChecker, PercentageTable
+from sempubflow.plot import Histogram
 
 
 class TestHomepages(Basetest):
@@ -68,8 +67,8 @@ class TestHomepages(Basetest):
         """
         if self.checker is None:
             return
-        with_save=True
-        self.checker.process_samples(show_progress=True,with_save=with_save)
+        with_save = True
+        self.checker.process_samples(show_progress=True, with_save=with_save)
 
         # Print the summary table
         print(self.checker.generate_summary_table())
@@ -130,11 +129,9 @@ class TestHomepages(Basetest):
         )
 
         # Generate and print the table
-        print(table.generate_table(tablefmt='mediawiki'))
+        print(table.generate_table(tablefmt="mediawiki"))
 
-    def create_histogramm(
-        self, data, title: str, file_name: str, xlabel: str
-    ):
+    def create_histogramm(self, data, title: str, file_name: str, xlabel: str):
         # Create and configure a Histogram instance
         histogram = Histogram(
             data,
@@ -215,24 +212,29 @@ class TestHomepages(Basetest):
             print(f"{modified} homepage texts")
         if modified > 0:
             checker.save_homepages_cache()
-            
-    def get_random_homepages(self,sample_size:10,max_len=20000)->list:
+
+    def get_random_homepages(self, sample_size: 10, max_len=20000) -> list:
         # Filter the homepages based on the text length criteria
         eligible_homepages = [
-            hp for hp in self.checker.homepages.homepages
+            hp
+            for hp in self.checker.homepages.homepages
             if hp.text and len(hp.text) < max_len
         ]
 
         # Select 10 random homepages from those that are eligible
-        selected_homepages = random.sample(eligible_homepages, min(sample_size, len(eligible_homepages)))
+        selected_homepages = random.sample(
+            eligible_homepages, min(sample_size, len(eligible_homepages))
+        )
 
         if self.debug:
             # Print the selected homepages
             for hp in selected_homepages:
-                print(f"Volume: {hp.volume}, URL: {hp.url}, Text Length: {len(hp.text)}")
-        volume_numbers=[hp.volume for hp in selected_homepages]
+                print(
+                    f"Volume: {hp.volume}, URL: {hp.url}, Text Length: {len(hp.text)}"
+                )
+        volume_numbers = [hp.volume for hp in selected_homepages]
         return volume_numbers
-           
+
     def test_random_homepages_with_max_length(self):
         """
         Select and print 10 random homepages with a text length of less than 20000 characters.
@@ -240,18 +242,21 @@ class TestHomepages(Basetest):
         # Ensure there is a homepage checker and volumes are loaded
         if not self.checker:
             return
-        
-        max_len=20000
+
+        max_len = 20000
         sample_size = 10
 
         # Filter the homepages based on the text length criteria
         eligible_homepages = [
-            hp for hp in self.checker.homepages.homepages
+            hp
+            for hp in self.checker.homepages.homepages
             if hp.text and len(hp.text) < max_len
         ]
 
         # Select 10 random homepages from those that are eligible
-        selected_homepages = random.sample(eligible_homepages, min(sample_size, len(eligible_homepages)))
+        selected_homepages = random.sample(
+            eligible_homepages, min(sample_size, len(eligible_homepages))
+        )
 
         # Print or process the selected homepages
         for hp in selected_homepages:
@@ -261,30 +266,31 @@ class TestHomepages(Basetest):
         for hp in selected_homepages:
             print(f"  {hp.volume},")
         print("]")
-        
+
     def test_random_set(self):
         """
         test a random set of volumes
         """
         if not self.checker:
             return
-        debug=self.debug
-        debug=True
-        vol_numbers=self.get_random_homepages(sample_size=50, max_len=10000)
-        llm=LLM()   
-        
-        events=Events()
-        log_path=os.path.join(self.ceurws_path,"llm")
-        os.makedirs(log_path, exist_ok=True)  # Create llm directory if it doesn't exist.
+        debug = self.debug
+        debug = True
+        vol_numbers = self.get_random_homepages(sample_size=50, max_len=10000)
+        llm = LLM()
+
+        events = Events()
+        log_path = os.path.join(self.ceurws_path, "llm")
+        os.makedirs(
+            log_path, exist_ok=True
+        )  # Create llm directory if it doesn't exist.
         log_file = f"events-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.yaml"
         for vol_number in tqdm(vol_numbers):
             try:
-                hp=self.checker.homepages_by_volume[vol_number]
-                event_info=EventInfo(llm,debug=debug)
-                event=event_info.get_event_metadata_from_homepage(hp,temperature=0.0)
-                event.volume=vol_number
+                hp = self.checker.homepages_by_volume[vol_number]
+                event_info = EventInfo(llm, debug=debug)
+                event = event_info.get_event_metadata_from_homepage(hp, temperature=0.0)
+                event.volume = vol_number
                 events.events.append(event)
             except Exception as ex:
-                print(str(ex),file=sys.stderr)
+                print(str(ex), file=sys.stderr)
         events.save_to_file(os.path.join(log_path, log_file))
-            
