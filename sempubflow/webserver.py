@@ -16,7 +16,7 @@ from sempubflow.homepage_selector import HomePageSelector
 from sempubflow.orcid_auth import ORCIDAuth
 from sempubflow.scholar_selector import ScholarSelector
 from sempubflow.version import Version
-from corpus import web
+
 
 
 class SemPubFlowWebServer(InputWebserver):
